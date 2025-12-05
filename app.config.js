@@ -1,4 +1,5 @@
-{
+import 'dotenv/config';
+export default {
   "expo": {
     "name": "mp3kz",
     "slug": "mp3kz",
@@ -44,6 +45,10 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+
+    extra: {
+      apiBaseUrl: process.env.API_BASE_URL
     }
   }
 }

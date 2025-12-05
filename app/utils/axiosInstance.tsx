@@ -1,9 +1,12 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import Constants from 'expo-constants';
 import { router } from 'expo-router';
 
+const API_BASE_URL = Constants.expoConfig?.extra?.apiBaseUrl;
+
 const axiosInstance = axios.create({
-  baseURL: 'http://192.168.100.6:8080', 
+  baseURL: API_BASE_URL, 
   timeout: 10000,  
   headers: {
     'Content-Type': 'application/json',
