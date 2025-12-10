@@ -43,6 +43,7 @@ export default function Login() {
         const videosIds: string[] = (await axiosInstance.get(`/api/albums/${userId}/liked-songs-ids`)).data;
         const newSet = new Set(videosIds);
         setLikedSongs(newSet); 
+        await AsyncStorage.removeItem("likedSongs");
         await AsyncStorage.setItem("likedSongs", JSON.stringify(Array.from(newSet))); 
         router.replace("/(tabs)");
           
