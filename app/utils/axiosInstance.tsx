@@ -28,12 +28,14 @@ axiosInstance.interceptors.response.use(
   (response) => response, 
   async (error) => {
     if (error.response?.status === 401) {
-      // Token expirado
-      await AsyncStorage.removeItem('token');
-      router.replace('/auth/login');
+        await AsyncStorage.multiRemove(["token", "userId"]);
+        router.replace("/auth/login");
+        
+        return Promise.resolve({ data: null, status: 401 });
+      }
+
+      return Promise.reject(error);
     }
-    return Promise.reject(error);
-  }
 );
 
 export default axiosInstance;
