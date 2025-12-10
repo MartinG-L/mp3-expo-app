@@ -78,7 +78,7 @@ export default function Login() {
         }} 
         />
         <TextInput
-        placeholder="Contrasena"
+        placeholder="Contraseña"
         value={password}
         onChangeText={setPassword}
         secureTextEntry
