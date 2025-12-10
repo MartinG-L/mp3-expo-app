@@ -1,3 +1,4 @@
+import { Text } from '@/components/mytext';
 import ModalCreatePlaylist from '@/components/ui/ModalCreatePlaylist';
 import ModalPlaylists from '@/components/ui/ModalPlaylists';
 import { useAuth } from '@/contexts/AuthContext';
@@ -5,7 +6,7 @@ import { useAudio } from '@/contexts/PlayerContext';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Stack } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Button, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { Button, ScrollView, TouchableOpacity, View } from 'react-native';
 import axiosInstance from '../utils/axiosInstance';
 
 
@@ -15,7 +16,8 @@ export default function HomeScreen() {
     name: String;
     description: String;
     thumbnail: String;
-    created_at: number;
+    createdAt: number;
+    isDefault: boolean;
   }
 
   interface Song {
@@ -32,6 +34,7 @@ export default function HomeScreen() {
     description: String;
     thumbnail: String;
     created_at: number;
+    is_default: boolean;
     songs: Song[];
   }
 
@@ -42,7 +45,12 @@ export default function HomeScreen() {
   const [ModalPlaylistVisible, setModalPlaylistVisible] = useState(false);
   const [loadingSongsPlaylist, setLoadingSongsPlaylist] = useState(false);
   const [ModalCreatePlaylistVisible, setModalCreatePlaylistVisible] = useState(false);
-  
+  const [titlePlaylist, settitlePlaylist] = useState("");
+  const [descriptionPlaylist, setDescriptionPlaylist] = useState("");
+  const [PlaylistId, setPlaylistId] = useState("");
+  const [isDefault, setIsDefault] = useState(false);
+  const [modalTitlePlaylist, setModalTitlePlaylist] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
 
   async function fetchPlaylist(){
     const request = await axiosInstance.get(`/api/albums?userId=${Number(userId)}`)
@@ -50,10 +58,10 @@ export default function HomeScreen() {
   }
 
   useEffect(() => {
-    if (userId && token) {
-      fetchPlaylist();
+  if (userId && token) {
+    fetchPlaylist();
     }
-  }, []);
+  }, [userId, token]);
 
   function logoutHandler(){
     status?.isLoaded ? player?.remove() : "";
@@ -63,6 +71,11 @@ export default function HomeScreen() {
   async function handlePlaylistModal(playlist: Playlists) {
     setLoadingSongsPlaylist(true);
     setModalPlaylistVisible(true);
+    setIsDefault(playlist.isDefault);
+    setModalTitlePlaylist(playlist.name.toString());
+    // Info para el modal crear
+    settitlePlaylist(playlist.name.toString())
+    setDescriptionPlaylist(playlist.description.toString());
     try { 
       const req = await axiosInstance.get(`/api/albums/${playlist.id}/songs`);
       const playlistSongs = req.data;
@@ -72,7 +85,8 @@ export default function HomeScreen() {
         name: playlist.name,
         description: playlist.description,
         thumbnail: playlist.thumbnail,
-        created_at: playlist.created_at,
+        created_at: playlist.createdAt,
+        is_default: playlist.isDefault,
         songs: playlistSongs || []
       });
     } catch (e: any) {
@@ -97,7 +111,7 @@ export default function HomeScreen() {
         display: "flex",
         flexDirection: "row",
         alignItems: "center",
-        marginTop: 20,
+        marginVertical: 20,
         justifyContent: "space-between",
         paddingHorizontal: 20
       }}>
@@ -107,14 +121,14 @@ export default function HomeScreen() {
           fontSize: 20,
           fontWeight: "bold",
         }}>Tus Playlists</Text>
-        <TouchableOpacity style={{padding: 3}} onPress={()=>setModalCreatePlaylistVisible(true)}>
+        <TouchableOpacity style={{padding: 5}} onPress={()=>setModalCreatePlaylistVisible(true)}>
           <MaterialIcons name="add" size={22} color="white" />
         </TouchableOpacity>
 
       </View>
       {/* PLAYLISTS */}
       <ScrollView>
-        <View style={{display: "flex", flex: 1, width: "100%", marginTop: 20}}>
+        <View style={{display: "flex", flex: 1, width: "100%"}}>
       
           {playLists?.map((playlist)=>(
             <TouchableOpacity key={playlist.id} style={{
@@ -124,11 +138,12 @@ export default function HomeScreen() {
               display: "flex",
               flexDirection: "row",
               alignItems: "center",
+              marginBottom: 12
             }} onPress={()=>handlePlaylistModal(playlist)}>
-              <View style={{backgroundColor: "gray", width: 80, height: 80, marginRight: 10}}></View>
+              <View style={{backgroundColor: "gray", width: 70, height: 70, marginRight: 10}}></View>
               <View style={{display: "flex", flexDirection: "column", gap: 5}}>
-                <Text style={{color:"white", fontWeight: "bold", fontSize: 18}}>{playlist.name}</Text>
-                <Text style={{color:"white", fontSize: 13}}>{playlist.description}</Text>
+                <Text style={{color:"white", fontWeight: "bold", fontSize: 17}}>{playlist.name}</Text>
+                <Text style={{color:"white", fontSize: 12}}>{playlist.description}</Text>
               </View>
             </TouchableOpacity>
           ))}
@@ -142,11 +157,31 @@ export default function HomeScreen() {
           setModalPlaylistVisible={setModalPlaylistVisible}
           setLoadingSongsPLaylist={setLoadingSongsPlaylist}
           LoadingSongsPLaylist={loadingSongsPlaylist}
+          isDefault={isDefault}
+          title={modalTitlePlaylist}
+          onDeleted={() => {
+            fetchPlaylist();
+            setModalPlaylistVisible(false);
+          }}
+          setIsEditing={setIsEditing}
+          setModalCreatePlaylistVisible={setModalCreatePlaylistVisible}
         ></ModalPlaylists>)
       }
       {/* Modal CreatePlaylist */}
       {ModalCreatePlaylistVisible && 
-        (<ModalCreatePlaylist setModalCreatePlaylistVisible={setModalCreatePlaylistVisible} />)
+        (<ModalCreatePlaylist
+          setModalCreatePlaylistVisible={setModalCreatePlaylistVisible}
+          setTitlePlaylist={settitlePlaylist}
+          setDescriptionPlaylist={setDescriptionPlaylist}
+          titlePlaylist={titlePlaylist}
+          descriptionPlaylist={descriptionPlaylist}
+          onSave={() => {
+            fetchPlaylist();
+            setModalPlaylistVisible(false);
+          }}
+          isEditingPlaylist={isEditing}
+          playListData={playListData}
+        />)
       }
 
     </View>

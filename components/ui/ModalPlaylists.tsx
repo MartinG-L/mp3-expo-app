@@ -1,6 +1,8 @@
+import axiosInstance from '@/app/utils/axiosInstance';
 import { useAudio } from '@/contexts/PlayerContext';
 import { MaterialIcons } from '@expo/vector-icons';
-import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Image, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Popover, PopoverContent, PopoverTrigger } from './popover';
 
 interface Song {
   id: number;
@@ -16,6 +18,7 @@ interface PlayListData {
   description: String;
   thumbnail: String;
   created_at: number;
+  is_default: boolean;
   songs: Song[]
 }
 
@@ -24,14 +27,36 @@ interface ModalPlaylistsProps {
   setModalPlaylistVisible: (visible: boolean) => void;
   setLoadingSongsPLaylist: (loading: boolean) => void;
   LoadingSongsPLaylist: boolean;
+  isDefault: boolean;
+  title: string
+  onDeleted: () => void; 
+  setIsEditing:  React.Dispatch<React.SetStateAction<boolean>>;
+  setModalCreatePlaylistVisible: (visible: boolean) => void;
 }
 
 export default function ModalPlaylists({
   playListData,
   setModalPlaylistVisible,
   LoadingSongsPLaylist,
+  isDefault,
+  title,
+  onDeleted,
+  setIsEditing,
+  setModalCreatePlaylistVisible
 }: ModalPlaylistsProps){
     const {playSong, currentSong, PlayerHeight} = useAudio();
+
+    const deletePlaylist = async ()=>{
+      console.log("onDeleted prop:", onDeleted);
+      if(playListData?.is_default) return;
+      try {
+        await axiosInstance.delete(`/api/albums/${playListData?.id}`)
+        setIsEditing(false);
+        onDeleted();
+      } catch (error) {
+        console.log(error)
+      }
+    }
 
     return(
       <View style={{ position: "absolute",
@@ -47,10 +72,72 @@ export default function ModalPlaylists({
 
         {/* Header con flecha */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => setModalPlaylistVisible(false)} style={{paddingVertical: 3, paddingHorizontal: 10}}>
-            <MaterialIcons name="arrow-back" size={20} color="white" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>{playListData?.name}</Text>
+    
+          <View style={{display: "flex", flexDirection: "row", position: "relative", alignItems:"center"}}>
+            <TouchableOpacity onPress={() => {
+              setModalPlaylistVisible(false)
+              setIsEditing(false);
+            }} style={{paddingVertical: 3, paddingHorizontal: 10}}>
+              <MaterialIcons name="arrow-back" size={20} color="white" />
+            </TouchableOpacity>
+            <Text style={styles.headerTitle}>{title}</Text>
+          </View>
+
+          {/* POPOVER OPTIONS */}
+          {isDefault ? null : 
+          <Popover>
+
+            <PopoverTrigger style={{paddingVertical: 3, paddingHorizontal: 20}}>
+              <MaterialIcons name="more-vert" size={20} color="white" />
+            </PopoverTrigger>
+
+           
+            <PopoverContent
+            style={{
+              backgroundColor: "#121212",
+              position:"absolute",
+              flexDirection: "column",
+              right: 0,
+              top: Platform.OS === 'android' ? 143 : 0,
+              minWidth: 120,
+              overflow: "hidden", 
+              borderWidth: 1,
+              borderColor: "#222"
+            }}>
+              <TouchableOpacity 
+               style={{
+                paddingVertical: 12,
+                paddingHorizontal: 5,
+                display:"flex",
+                flexDirection: "row",
+                justifyContent: "space-around",
+                borderBottomColor: "#333",
+                borderWidth: 1,
+               }} onPress={()=>{
+                  setIsEditing(true);
+                  setModalCreatePlaylistVisible(true);  
+                }}>
+                <Text style={{color:"white", fontWeight:"light", fontSize: 12}}>Editar</Text>
+                <MaterialIcons name="edit" size={18} color="#969696ff" />
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+              style={{
+                paddingVertical: 12,
+                paddingHorizontal: 5,
+                display:"flex",
+                flexDirection: "row",
+                justifyContent: "space-around"
+              }} onPress={deletePlaylist}>
+                <Text style={{color:"white", fontWeight:"light", fontSize: 12}}>Eliminar</Text>
+                <MaterialIcons name="delete" size={18} color="#a83737ff" />
+              </TouchableOpacity>
+
+            </PopoverContent>
+
+          </Popover>}
+          {/* FIN POPOVER OPTIONS */}
+          
         </View>
 
         {/* Contenido */}
@@ -65,10 +152,10 @@ export default function ModalPlaylists({
               <TouchableOpacity
                 key={music.videoId}
                 onPress={() => playSong({
-                    videoId: music.videoId,
-                    title: music.title,
-                    thumbnail: music.thumbnail,
-                    duration: music.duration,
+                  videoId: music.videoId,
+                  title: music.title,
+                  thumbnail: music.thumbnail,
+                  duration: music.duration,
                 })}
                 style={{
                     display: "flex",
@@ -84,8 +171,8 @@ export default function ModalPlaylists({
                 }}
               >   
                 <Image 
-                    source={{ uri: music.thumbnail }} 
-                    style={{ width: 70, height: 60, borderRadius: 5, marginRight: 10 }} 
+                  source={{ uri: music.thumbnail }} 
+                  style={{ width: 70, height: 60, borderRadius: 5, marginRight: 10 }} 
                 />
                 <Text style={{color:'white'}}>{music.title}</Text>
             </TouchableOpacity>
@@ -111,6 +198,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     paddingVertical: 15,
     borderBottomColor: "#ccc",
+    justifyContent: "space-between"
   },
   headerTitle: {fontSize: 18, fontWeight: "bold", color:"white" },
   content: { flex: 1, justifyContent: "center", alignItems: "center" },

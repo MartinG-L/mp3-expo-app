@@ -59,8 +59,8 @@ export default function Player() {
           onSlidingComplete={(value) => {
             player.seekTo(value);
           }}
-          minimumTrackTintColor="#dadadaff" // color de la barra
-          maximumTrackTintColor="#1d1d1dff"
+          minimumTrackTintColor="#dadadaff" 
+          maximumTrackTintColor="transparent"
           thumbTintColor="transparent"
         />
       </View>

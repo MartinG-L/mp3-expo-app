@@ -21,7 +21,7 @@ export default function Login() {
     const login = async () => {
       if (isDisabled) return;
       setIsLoading(true);
-      setError(""); // Limpiar errores 
+      setError("");
   
       try {
         const res = await axiosInstance.post("/login", {
@@ -93,10 +93,10 @@ export default function Login() {
 
         <Pressable 
           style={({ pressed }) => [
-                styles.button,
-                pressed && styles.buttonPressed,
-                isLoading && styles.buttonDisabled,
-                isDisabled && styles.buttonDisabled
+              styles.button,
+              pressed && styles.buttonPressed,
+              isLoading && styles.buttonDisabled,
+              isDisabled && styles.buttonDisabled
             ]}
             onPress={login}
             disabled={isDisabled}

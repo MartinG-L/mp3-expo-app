@@ -4,8 +4,10 @@ import 'react-native-reanimated';
 
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { AudioProvider } from '@/contexts/PlayerContext';
+import { PortalHost } from "@rn-primitives/portal";
 import { useEffect } from 'react';
 import { ActivityIndicator, View } from 'react-native';
+
 
 export const unstable_settings = {
   anchor: '(tabs)',
@@ -51,6 +53,7 @@ function RootLayoutNav() {
           <Stack.Screen name="(tabs)" options={{ headerShown: false }}/>
         </Stack>
       </View>
+      <PortalHost />
     </ThemeProvider>
   );
 }
