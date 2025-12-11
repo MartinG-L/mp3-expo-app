@@ -24,10 +24,10 @@ export default function RootLayout() {
 }
 
 function RootLayoutNav() {
-  const { loading, token } = useAuth();
+  const { loading, token, isLoggingIn } = useAuth();
   
   useEffect(() => {
-    if (!loading) {
+    if (!loading && !isLoggingIn) {
       if (!token) {
         router.replace("/auth/login");
       } else {
@@ -38,9 +38,9 @@ function RootLayoutNav() {
 
   if (loading) {
     return (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center',backgroundColor: DarkTheme.colors.background }}>
-          <ActivityIndicator size="large" color="#4b7cbbff" />
-        </View>
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center',backgroundColor: "#111" }}>
+        <ActivityIndicator size="large" color="white" />
+      </View>
     );
   }
 

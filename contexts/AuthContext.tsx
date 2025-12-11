@@ -5,26 +5,20 @@ type AuthContextType = {
   token: string | null;
   setToken: (t: string | null) => void;
   loading: boolean;
-  saveUserId: (t: number | null) => void,
-  saveToken: (t: string | null) => void,
-  logout: () => void,
+  saveUserId: (t: number | null) => void;
+  saveToken: (t: string | null) => void;
+  logout: () => void;
   userId: number | null;
+  isLoggingIn: boolean;
 };
 
-const AuthContext = createContext<AuthContextType>({
-  token: null,
-  setToken: () => {},
-  loading: true,
-  logout: ()=>{},
-  saveToken: ()=>{},
-  saveUserId: ()=>{},
-  userId: null
-});
+const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [token, setToken] = useState<string | null>(null);
   const [userId, setUserId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   useEffect(() => {
     AsyncStorage.getItem("token").then((t) => {
@@ -52,12 +46,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const saveToken = async (newToken: string | null) => {
+    setIsLoggingIn(true);
     if (!newToken) {
       setToken(null);
       await AsyncStorage.removeItem("token");
     } else {
       setToken(newToken);
       await AsyncStorage.setItem("token", newToken);
+        setTimeout(() => {
+        setIsLoggingIn(false);
+      }, 1200);
     }
   };
 
@@ -68,7 +66,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ token, setToken, loading, saveToken, logout, saveUserId, userId }}>
+    <AuthContext.Provider value={{ token, setToken, loading, saveToken, logout, saveUserId, userId, isLoggingIn }}>
       {children}
     </AuthContext.Provider>
   );

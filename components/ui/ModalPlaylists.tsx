@@ -1,8 +1,8 @@
 import axiosInstance from '@/app/utils/axiosInstance';
 import { useAudio } from '@/contexts/PlayerContext';
 import { MaterialIcons } from '@expo/vector-icons';
+import * as PopoverPrimitive from '@rn-primitives/popover';
 import { ActivityIndicator, Image, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { Popover, PopoverContent, PopoverTrigger } from './popover';
 
 interface Song {
   id: number;
@@ -85,57 +85,66 @@ export default function ModalPlaylists({
 
           {/* POPOVER OPTIONS */}
           {isDefault ? null : 
-          <Popover>
+          <PopoverPrimitive.Root>
 
-            <PopoverTrigger style={{paddingVertical: 3, paddingHorizontal: 20}}>
-              <MaterialIcons name="more-vert" size={20} color="white" />
-            </PopoverTrigger>
-
-           
-            <PopoverContent
-            style={{
-              backgroundColor: "#121212",
-              position:"absolute",
-              flexDirection: "column",
-              right: 0,
-              top: Platform.OS === 'android' ? 143 : 0,
-              minWidth: 120,
-              overflow: "hidden", 
-              borderWidth: 1,
-              borderColor: "#222"
-            }}>
-              <TouchableOpacity 
-               style={{
-                paddingVertical: 12,
-                paddingHorizontal: 5,
-                display:"flex",
-                flexDirection: "row",
-                justifyContent: "space-around",
-                borderBottomColor: "#333",
-                borderWidth: 1,
-               }} onPress={()=>{
-                  setIsEditing(true);
-                  setModalCreatePlaylistVisible(true);  
-                }}>
-                <Text style={{color:"white", fontWeight:"light", fontSize: 12}}>Editar</Text>
-                <MaterialIcons name="edit" size={18} color="#969696ff" />
+            <PopoverPrimitive.Trigger asChild>
+              <TouchableOpacity style={{paddingVertical: 3, paddingHorizontal: 20}}>
+                <MaterialIcons name="more-vert" size={20} color="white" />
               </TouchableOpacity>
-
-              <TouchableOpacity 
+            </PopoverPrimitive.Trigger>
+            
+            
+            <PopoverPrimitive.Portal>
+              <PopoverPrimitive.Content
               style={{
-                paddingVertical: 12,
-                paddingHorizontal: 5,
-                display:"flex",
-                flexDirection: "row",
-                justifyContent: "space-around"
-              }} onPress={deletePlaylist}>
-                <Text style={{color:"white", fontWeight:"light", fontSize: 12}}>Eliminar</Text>
-                <MaterialIcons name="delete" size={18} color="#a83737ff" />
-              </TouchableOpacity>
+                backgroundColor: "#121212",
+                position:"absolute",
+                flexDirection: "column",
+                right: 0,
+                top: Platform.OS === 'android' ? 143 : 0,
+                minWidth: 120,
+                overflow: "hidden", 
+                borderWidth: 1,
+                borderColor: "#222"
+              }}>
+                {/* Botones */}
+                <PopoverPrimitive.Close asChild>
+                  <TouchableOpacity 
+                  style={{
+                    paddingVertical: 12,
+                    paddingHorizontal: 5,
+                    display:"flex",
+                    flexDirection: "row",
+                    justifyContent: "space-around",
+                    borderBottomColor: "#333",
+                    borderWidth: 1,
+                  }} onPress={()=>{
+                      setIsEditing(true);
+                      setModalCreatePlaylistVisible(true);  
+                    }}>
+                    <Text style={{color:"white", fontWeight:"light", fontSize: 12}}>Editar</Text>
+                    <MaterialIcons name="edit" size={18} color="#969696ff" />
+                  </TouchableOpacity>
+                </PopoverPrimitive.Close>
 
-            </PopoverContent>
+                <PopoverPrimitive.Close asChild>
+                  <TouchableOpacity 
+                  style={{
+                    paddingVertical: 12,
+                    paddingHorizontal: 5,
+                    display:"flex",
+                    flexDirection: "row",
+                    justifyContent: "space-around"
+                  }} onPress={deletePlaylist}>
+                    <Text style={{color:"white", fontWeight:"light", fontSize: 12}}>Eliminar</Text>
+                    <MaterialIcons name="delete" size={18} color="#a83737ff" />
+                  </TouchableOpacity>
+                </PopoverPrimitive.Close>
+                {/* FIN BOTONES */}
+              </PopoverPrimitive.Content>
+            </PopoverPrimitive.Portal>
 
-          </Popover>}
+          </PopoverPrimitive.Root>}
           {/* FIN POPOVER OPTIONS */}
           
         </View>

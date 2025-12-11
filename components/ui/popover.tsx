@@ -6,6 +6,7 @@ import * as React from 'react';
 import { Platform, StyleSheet } from 'react-native';
 import { FadeIn, FadeOut } from 'react-native-reanimated';
 import { FullWindowOverlay as RNFullWindowOverlay } from 'react-native-screens';
+const PopoverClose = PopoverPrimitive.Close;
 
 const Popover = PopoverPrimitive.Root;
 
@@ -53,4 +54,5 @@ function PopoverContent({
   );
 }
 
-export { Popover, PopoverContent, PopoverTrigger };
+export { Popover, PopoverClose, PopoverContent, PopoverTrigger };
+

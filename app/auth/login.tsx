@@ -13,10 +13,12 @@ export default function Login() {
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
     const [isLoading, setIsLoading] = useState(false);
-    const {saveToken, saveUserId} = useAuth();
+    const {saveToken, saveUserId, isLoggingIn} = useAuth();
     const {setLikedSongs, likedSongs} = useAudio();
 
     const isDisabled = !username.trim() || !password.trim() || isLoading;
+
+    const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
     const login = async () => {
       if (isDisabled) return;
@@ -45,8 +47,8 @@ export default function Login() {
         setLikedSongs(newSet); 
         await AsyncStorage.removeItem("likedSongs");
         await AsyncStorage.setItem("likedSongs", JSON.stringify(Array.from(newSet))); 
+        await delay(1200);
         router.replace("/(tabs)");
-          
       } catch (e: any) {
         if (!e.response) {
           // Sin respuesta = servidor caido o sin internet
@@ -62,9 +64,38 @@ export default function Login() {
           setError("Ocurrio un error inesperado");
         }
       } finally {
-          setIsLoading(false);
+        setIsLoading(false);
       }
     };
+
+    if (isLoggingIn) {
+      return (
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+            backgroundColor: "black",
+          }}
+        >
+          <Text
+            style={{
+              color: "white",
+              fontSize: 32,
+              fontWeight: "bold",
+            }}
+          >
+            Bienvenido Martin!
+          </Text>
+          <ActivityIndicator
+            size="large"
+            style={{ marginTop: 20 }}
+            color="#FFD700"
+          />
+        </View>
+      );
+    }
+
 
     return (
     <View style={{ padding: 20, width: "65%", margin: "auto" }}>
