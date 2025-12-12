@@ -4,9 +4,8 @@ import ModalPlaylists from '@/components/ui/ModalPlaylists';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAudio } from '@/contexts/PlayerContext';
 import { MaterialIcons } from '@expo/vector-icons';
-import { Stack } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Button, ScrollView, TouchableOpacity, View } from 'react-native';
+import { ScrollView, TouchableOpacity, View } from 'react-native';
 import axiosInstance from '../utils/axiosInstance';
 
 
@@ -38,8 +37,8 @@ export default function HomeScreen() {
     songs: Song[];
   }
 
-  const {logout, userId, token, saveToken, saveUserId} = useAuth();
-  const {status, player} = useAudio(); 
+  const {logout, userId, token} = useAuth();
+  const {status, player, currentSong, PlayerHeight} = useAudio(); 
   const [playLists, setplayLists] = useState<Playlists[]>([]);
   const [playListData, setplayListData] = useState<PlayListData | null>(null);
   const [ModalPlaylistVisible, setModalPlaylistVisible] = useState(false);
@@ -97,14 +96,11 @@ export default function HomeScreen() {
   }
 
   return (
-    <>
-    <Stack.Screen options={{ 
-      title: "Inicio",
-      headerTitle: "Bienvenido, Martin!",
-      headerRight: ()=> <Button onPress={logoutHandler} title="Cerrar sesion" />
-    }} />
-
-    <View style={{flex: 1}}>
+      <View style={{
+        display: 'flex',
+        flex: 1,
+        marginBottom: currentSong ? PlayerHeight : 0,
+      }}>
 
       {/* Header "Tus Playlist" */}
       <View style={{
@@ -185,7 +181,5 @@ export default function HomeScreen() {
       }
 
     </View>
-    </>
-
   );
 }

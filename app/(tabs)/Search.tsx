@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { ActivityIndicator, Image, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import axiosInstance from '../utils/axiosInstance';
 
+
 export default function Search() {
     interface videoResult { 
         title: string,
@@ -31,7 +32,12 @@ export default function Search() {
         setisLoading(false);
     }
     return (
-        <View style={{display: 'flex', alignItems: 'center', flex: 1, marginBottom: currentSong ? PlayerHeight : 0 }}>
+        <View style={{
+            display: 'flex',
+            alignItems: 'center',
+            flex: 1,
+            marginBottom: currentSong ? PlayerHeight : 0,
+        }}>
             <Stack.Screen options={{ title: "Buscar" }} />
             <TextInput
             placeholder="Busca una cancion.."
@@ -93,4 +99,8 @@ export default function Search() {
            
         </View>
     );
+}
+
+function userSafeAreaInsets() {
+    throw new Error('Function not implemented.');
 }

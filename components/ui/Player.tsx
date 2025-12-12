@@ -94,7 +94,7 @@ export default function Player() {
             <MaterialIcons name="add-box" size={28} color="#dfdfdfff" />
           </TouchableOpacity>
           <TouchableOpacity style={{padding: 5}} onPress={handleLike}>
-            <MaterialIcons name="favorite" size={28} color={isLiked ? "#fddf32ff" : "white"} />
+            <MaterialIcons name="favorite" size={28} color={isLiked ? "#FFD700" : "white"} />
           </TouchableOpacity>
           <View style={{height: 40, width: 2, backgroundColor: "#797979ff", marginHorizontal: 10}}>
           </View>

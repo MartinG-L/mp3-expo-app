@@ -7,6 +7,8 @@ import { AudioProvider } from '@/contexts/PlayerContext';
 import { PortalHost } from "@rn-primitives/portal";
 import { useEffect } from 'react';
 import { ActivityIndicator, View } from 'react-native';
+import { SafeAreaView } from "react-native-safe-area-context";
+
 
 
 export const unstable_settings = {
@@ -17,7 +19,17 @@ export default function RootLayout() {
   return (
     <AuthProvider>
       <AudioProvider>
-        <RootLayoutNav />
+        <View style={{ flex: 1 }}>
+          <SafeAreaView
+            style={{ flex: 0, backgroundColor: "#000" }}
+            edges={["top"]}
+          />
+            <RootLayoutNav />
+          <SafeAreaView
+            style={{ flex: 0, backgroundColor: "#111" }}
+            edges={["bottom"]}
+          />
+        </View>
       </AudioProvider>
     </AuthProvider>
   );

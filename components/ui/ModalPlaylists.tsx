@@ -2,7 +2,8 @@ import axiosInstance from '@/app/utils/axiosInstance';
 import { useAudio } from '@/contexts/PlayerContext';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as PopoverPrimitive from '@rn-primitives/popover';
-import { ActivityIndicator, Image, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { PopoverContent, PopoverTrigger } from './popover';
 
 interface Song {
   id: number;
@@ -66,8 +67,7 @@ export default function ModalPlaylists({
         bottom: 0,
         backgroundColor: "black",
         zIndex: 50,
-        flex: 1,
-        marginBottom: currentSong ? PlayerHeight : 0
+        flex: 1
       }}>
 
         {/* Header con flecha */}
@@ -87,21 +87,21 @@ export default function ModalPlaylists({
           {isDefault ? null : 
           <PopoverPrimitive.Root>
 
-            <PopoverPrimitive.Trigger asChild>
+            <PopoverTrigger asChild>
               <TouchableOpacity style={{paddingVertical: 3, paddingHorizontal: 20}}>
                 <MaterialIcons name="more-vert" size={20} color="white" />
               </TouchableOpacity>
-            </PopoverPrimitive.Trigger>
+            </PopoverTrigger>
             
             
-            <PopoverPrimitive.Portal>
-              <PopoverPrimitive.Content
+              <PopoverContent
+              side="bottom"
+              sideOffset={8}
+              align="end"
+              alignOffset={-20}
               style={{
                 backgroundColor: "#121212",
-                position:"absolute",
                 flexDirection: "column",
-                right: 0,
-                top: Platform.OS === 'android' ? 143 : 0,
                 minWidth: 120,
                 overflow: "hidden", 
                 borderWidth: 1,
@@ -141,8 +141,7 @@ export default function ModalPlaylists({
                   </TouchableOpacity>
                 </PopoverPrimitive.Close>
                 {/* FIN BOTONES */}
-              </PopoverPrimitive.Content>
-            </PopoverPrimitive.Portal>
+              </PopoverContent>
 
           </PopoverPrimitive.Root>}
           {/* FIN POPOVER OPTIONS */}
