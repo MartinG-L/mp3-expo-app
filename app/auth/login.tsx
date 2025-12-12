@@ -159,7 +159,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   button: {
-    backgroundColor: '#2fa0d4ff',
+    backgroundColor: '#FFD700',
     padding: 15,
     borderRadius: 8,
     alignItems: 'center',
@@ -172,7 +172,7 @@ const styles = StyleSheet.create({
     opacity: .5
   },
   buttonText: {
-    color: '#fff',
+    color: 'black',
     fontSize: 16,
     fontWeight: '600',
   },
