@@ -1,9 +1,10 @@
+import { Text } from "@/components/mytext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAudio } from "@/contexts/PlayerContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, Pressable, StyleSheet, TextInput, View } from "react-native";
 import axiosInstance from "../utils/axiosInstance";
 
 
