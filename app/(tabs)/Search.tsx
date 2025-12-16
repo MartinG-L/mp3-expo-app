@@ -53,7 +53,7 @@ export default function Search() {
                 marginTop: 15,
                 marginBottom:10,
                 borderRadius: 5,
-                width: "95%",
+                width: "99%",
                 color: 'white',
             }}
             />
@@ -63,7 +63,7 @@ export default function Search() {
                         <ActivityIndicator style={{marginTop: 120}} size="large" color="#2fa0d4ff" />
                     </View>
                 ) : (
-                <View style={{ width: "100%" }}>
+                <View style={{ width: "100%", flex: 1 }}>
                     {listMusic.map((music) => (
                         <TouchableOpacity
                             key={music.videoId}
@@ -90,7 +90,9 @@ export default function Search() {
                                 source={{ uri: music.urlThumbnail }} 
                                 style={{ width: 70, height: 60, borderRadius: 5, marginRight: 10 }} 
                             />
-                            <Text style={{color:'white'}}>{music.title}</Text>
+                            <View style={{flex: 1}}>
+                                <Text style={{color:'white'}}>{music.title}</Text>
+                            </View>
                         </TouchableOpacity>
                     ))}
                 </View>
