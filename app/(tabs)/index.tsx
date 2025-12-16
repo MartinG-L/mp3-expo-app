@@ -50,15 +50,26 @@ export default function HomeScreen() {
   const [isDefault, setIsDefault] = useState(false);
   const [modalTitlePlaylist, setModalTitlePlaylist] = useState("");
   const [isEditing, setIsEditing] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   async function fetchPlaylist(){
-    const request = await axiosInstance.get(`/api/albums?userId=${Number(userId)}`)
-    setplayLists(request.data)
+    try {    
+      const request = await axiosInstance.get(`/api/albums?userId=${Number(userId)}`)
+      setplayLists(request.data)
+    } catch (error: any) {
+      if(!error.response){
+        setErrorMessage("No se pudo conectar al servidor.");
+      } else if (error.response.status >= 500){
+        setErrorMessage("Error del servidor. Intente mas tarde.");
+      } else {
+        setErrorMessage("Ocurrio un error inesperado.");
+      }
+    }
   }
 
   useEffect(() => {
-  if (userId && token) {
-    fetchPlaylist();
+    if (userId && token) {
+      fetchPlaylist();
     }
   }, [userId, token]);
 
@@ -118,6 +129,11 @@ export default function HomeScreen() {
 
       </View>
       {/* PLAYLISTS */}
+      {errorMessage ? (
+        <View style={{paddingHorizontal: 20, marginTop: 10}}>
+          <Text style={{color: "red"}}>{errorMessage}</Text>
+        </View>
+      ) : (
       <ScrollView>
         <View style={{display: "flex", flex: 1, width: "100%"}}>
       
@@ -140,7 +156,7 @@ export default function HomeScreen() {
           ))}
           
         </View>
-      </ScrollView>
+      </ScrollView>)}
       {/* Modal playlist */}
       {ModalPlaylistVisible && 
         (<ModalPlaylists
