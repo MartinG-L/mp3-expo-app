@@ -62,11 +62,6 @@ export default function HomeScreen() {
     }
   }, [userId, token]);
 
-  function logoutHandler(){
-    status?.isLoaded ? player?.remove() : "";
-    logout();
-  }
-
   async function handlePlaylistModal(playlist: Playlists) {
     setLoadingSongsPlaylist(true);
     setModalPlaylistVisible(true);
