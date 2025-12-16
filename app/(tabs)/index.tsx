@@ -153,6 +153,7 @@ export default function HomeScreen() {
           onDeleted={() => {
             fetchPlaylist();
             setModalPlaylistVisible(false);
+            setplayListData(null);
           }}
           setIsEditing={setIsEditing}
           setModalCreatePlaylistVisible={setModalCreatePlaylistVisible}
