@@ -182,7 +182,9 @@ export default function ModalPlaylists({
                   source={{ uri: music.thumbnail }} 
                   style={{ width: 70, height: 60, borderRadius: 5, marginRight: 10 }} 
                 />
-                <Text style={{color:'white'}}>{music.title}</Text>
+                <View style={{flex: 1}}>
+                  <Text style={{color:'white'}}>{music.title}</Text>    
+                </View>
             </TouchableOpacity>
             ))}
           </View>
