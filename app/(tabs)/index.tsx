@@ -177,6 +177,7 @@ export default function HomeScreen() {
           }}
           isEditingPlaylist={isEditing}
           playListData={playListData}
+          modalVisible={ModalCreatePlaylistVisible}
         />)
       }
 

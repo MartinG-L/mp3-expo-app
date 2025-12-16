@@ -4,7 +4,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, Keyboard, KeyboardAvoidingView, Platform, Pressable, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from "react-native";
-import Animated, { FadeIn, FadeOut, ZoomIn, ZoomOut } from "react-native-reanimated";
+import Animated, { runOnJS, useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 
 interface Song {
   id: number;
@@ -27,6 +27,7 @@ interface PlayListData {
 
 interface props {
   setModalCreatePlaylistVisible: (visible: boolean) => void;
+  modalVisible: boolean;
   setTitlePlaylist:  React.Dispatch<React.SetStateAction<string>>;
   setDescriptionPlaylist:  React.Dispatch<React.SetStateAction<string>>;
   titlePlaylist: string;
@@ -44,12 +45,37 @@ export default function ModalCreatePlaylist({
   descriptionPlaylist,
   onSave,
   isEditingPlaylist,
-  playListData
+  playListData,
+  modalVisible
 }:props){
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const isWeb = Platform.OS === "web";
+  const [isMounted, setisMounted] = useState(false);
+
+  const opacity = useSharedValue(0);
+  const scale = useSharedValue(0.7);
+
+  const open = () => {
+    opacity.value = withTiming(1, { duration: 200 });
+    scale.value = withTiming(1, { duration: 200 });
+  };
+
+  const close = () => {
+    opacity.value = withTiming(0, { duration: 150 }, (finished) => {
+      if (finished) {
+        runOnJS(setisMounted)(false);
+        runOnJS(setModalCreatePlaylistVisible)(false);
+      }
+    });
+    scale.value = withTiming(0.9, { duration: 150 });
+  };
+
+  const modalAnimation = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+    opacity: opacity.value,
+  }));
 
   const IsDisabled =
   !titlePlaylist || 
@@ -103,16 +129,25 @@ export default function ModalCreatePlaylist({
   };
 
   useEffect(() => {
+    if (modalVisible) {
+      setisMounted(true);
+      requestAnimationFrame(() => {
+        open();
+      });
+    } else if (isMounted) {
+      close();
+    }
     if (!isEditingPlaylist) {
       setTitlePlaylist("");
       setDescriptionPlaylist("");
     }
-  }, [isEditingPlaylist]);
+  }, [isEditingPlaylist, modalVisible]);
 
- return(
-  <Animated.View
-      entering={FadeIn.duration(150)}
-      exiting={FadeOut.duration(150)}
+
+ return (
+  <>
+  {isMounted &&
+    (<Animated.View 
       style={{
         position: "absolute",
         top: 0,
@@ -125,7 +160,7 @@ export default function ModalCreatePlaylist({
       }}
     >
       {/* Fondo borroso */}
-      <TouchableWithoutFeedback onPress={() => setModalCreatePlaylistVisible(false)}>
+      <TouchableWithoutFeedback onPress={close}>
         <BlurView
           intensity={100}
           tint="dark"
@@ -148,9 +183,8 @@ export default function ModalCreatePlaylist({
       >
         <TouchableWithoutFeedback onPress={handleDismissKeyboard}>
           <Animated.View
-            entering={ZoomIn.duration(200)}
-            exiting={ZoomOut.duration(150)}
-            style={{
+            style={[
+            {
               alignSelf: "center",
               backgroundColor: "#121212",
               paddingVertical: 15,
@@ -159,7 +193,8 @@ export default function ModalCreatePlaylist({
               borderWidth: 1,
               borderColor: "#333",
               minWidth: 300,
-            }}
+            }, modalAnimation
+            ]}
           >
             {/* Header */}
             <View
@@ -231,7 +266,7 @@ export default function ModalCreatePlaylist({
                   borderRadius: 3,
                   marginRight: 10,
                 }}
-                onPress={() => setModalCreatePlaylistVisible(false)}
+                onPress={close}
               >
                 <Text style={{ color: "white" }}>Cancelar</Text>
               </Pressable>
@@ -262,6 +297,7 @@ export default function ModalCreatePlaylist({
           </Animated.View>
         </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
-    </Animated.View>
+    </Animated.View>)}
+  </>
  )
 }
