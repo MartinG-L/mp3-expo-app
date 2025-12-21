@@ -89,7 +89,6 @@ export default function HomeScreen() {
         urlThumbnail: song.thumbnail,
         duration: song.duration,
       }));
-      setQueue(playlistSongs);
       setplayListData({
         id: playlist.id,
         name: playlist.name,
