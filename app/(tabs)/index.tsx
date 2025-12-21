@@ -21,10 +21,10 @@ export default function HomeScreen() {
 
   interface Song {
     id: number;
-    title: string;
-    videoId: string;
-    thumbnail: string;
-    duration: number;
+    title: string,
+    videoId: string,
+    urlThumbnail: string
+    duration: number
   }
 
   interface PlayListData {
@@ -38,7 +38,7 @@ export default function HomeScreen() {
   }
 
   const {logout, userId, token} = useAuth();
-  const {status, player, currentSong, PlayerHeight} = useAudio(); 
+  const {setQueue, currentSong, PlayerHeight} = useAudio(); 
   const [playLists, setplayLists] = useState<Playlists[]>([]);
   const [playListData, setplayListData] = useState<PlayListData | null>(null);
   const [ModalPlaylistVisible, setModalPlaylistVisible] = useState(false);
@@ -46,7 +46,6 @@ export default function HomeScreen() {
   const [ModalCreatePlaylistVisible, setModalCreatePlaylistVisible] = useState(false);
   const [titlePlaylist, settitlePlaylist] = useState("");
   const [descriptionPlaylist, setDescriptionPlaylist] = useState("");
-  const [PlaylistId, setPlaylistId] = useState("");
   const [isDefault, setIsDefault] = useState(false);
   const [modalTitlePlaylist, setModalTitlePlaylist] = useState("");
   const [isEditing, setIsEditing] = useState(false);
@@ -83,8 +82,14 @@ export default function HomeScreen() {
     setDescriptionPlaylist(playlist.description.toString());
     try { 
       const req = await axiosInstance.get(`/api/albums/${playlist.id}/songs`);
-      const playlistSongs = req.data;
-      console.log(playlistSongs);
+      const playlistSongs = req.data.map((song: any) => ({
+        id: song.id,
+        title: song.title,
+        videoId: song.videoId,
+        urlThumbnail: song.thumbnail,
+        duration: song.duration,
+      }));
+      setQueue(playlistSongs);
       setplayListData({
         id: playlist.id,
         name: playlist.name,

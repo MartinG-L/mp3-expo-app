@@ -7,10 +7,10 @@ import { PopoverContent, PopoverTrigger } from './popover';
 
 interface Song {
   id: number;
-  title: string;
-  videoId: string;
-  thumbnail: string;
-  duration: number;
+  title: string,
+  videoId: string,
+  urlThumbnail: string
+  duration: number
 }
 
 interface PlayListData {
@@ -45,10 +45,9 @@ export default function ModalPlaylists({
   setIsEditing,
   setModalCreatePlaylistVisible
 }: ModalPlaylistsProps){
-    const {playSong, currentSong, PlayerHeight} = useAudio();
+    const {queueAndPlay, currentSong, PlayerHeight} = useAudio();
 
     const deletePlaylist = async ()=>{
-      console.log("onDeleted prop:", onDeleted);
       if(playListData?.is_default) return;
       try {
         await axiosInstance.delete(`/api/albums/${playListData?.id}`)
@@ -156,15 +155,10 @@ export default function ModalPlaylists({
             </View>
           ) : (
           <View style={{ width: "100%" }}>
-            {playListData?.songs.map((music) => (
+            {playListData?.songs.map((music, index) => (
               <TouchableOpacity
                 key={music.videoId}
-                onPress={() => playSong({
-                  videoId: music.videoId,
-                  title: music.title,
-                  thumbnail: music.thumbnail,
-                  duration: music.duration,
-                })}
+                onPress={() => queueAndPlay(playListData.songs, index)}
                 style={{
                     display: "flex",
                     flex: 1,
@@ -179,7 +173,7 @@ export default function ModalPlaylists({
                 }}
               >   
                 <Image 
-                  source={{ uri: music.thumbnail }} 
+                  source={{ uri: music.urlThumbnail }} 
                   style={{ width: 70, height: 60, borderRadius: 5, marginRight: 10 }} 
                 />
                 <View style={{flex: 1}}>

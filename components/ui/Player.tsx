@@ -14,7 +14,9 @@ export default function Player() {
     handleLike,
     Duration,
     setPlayerHeight,
-    isLiked
+    isLiked,
+    prev,
+    next,
   } = useAudio();
   let [newThumbnail, setnewThumbnail] = useState<string | null>(null);
   let [UpdateCurrentSong, setUpdateCurrentSong] = useState<string|null>(null);
@@ -31,11 +33,10 @@ export default function Player() {
   // Nos aseguramos de que solo se imprima cuando realmente cambie el thumbnail
   // Esto pasa porque en nuestro context el status se va actualizando cada segundo
   useEffect(() => {
-    player.volume > 0.01 ? player.muted = false : player.muted = true;
     modalVolumeVisble && measureVolumeBtn();
     setnewThumbnail(Thumbnail);
     setUpdateCurrentSong(currentSong);
-  }, [Thumbnail, currentSong, width, height, player.volume]);
+  }, [Thumbnail, currentSong, width, height, player.volume, Volume]);
   // Protegimos que player exista
   if (!player) return null;
   // Formatear tiempo mm:ss
@@ -100,7 +101,6 @@ export default function Player() {
       </View>
       {/* THUMBNAIL */}
       <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 12, paddingBottom: 5}}>
-        {/* Thumbnail */}
         <View>
           <Image 
             source={newThumbnail ? { uri: newThumbnail } : undefined}
@@ -128,23 +128,31 @@ export default function Player() {
             style={{padding: 5}}
           >
             <MaterialIcons
-              name="volume-up"
+              name={
+                Volume === 0 || Volume <= 0.03 
+                ? "volume-off" 
+                : Volume < 0.5 
+                ? "volume-down" 
+                : "volume-up"
+              }
               size={28}
-              color="#dfdfdfff"
+              color={modalVolumeVisble ? "#888" : "#dfdfdfff"}
             />
           </TouchableOpacity>
           {modalVolumeVisble && volumePos && (
-            <Modal visible={modalVolumeVisble} transparent animationType="fade">
+            <Modal visible={modalVolumeVisble} transparent animationType="none">
               <Pressable
                 style={{flex: 1}}
                 onPress={() => setModalVolumeVisble(false)}
               >
               <View style={{
                 position: "absolute",
-                backgroundColor: "#dfdfdf", 
+                backgroundColor: "#222", 
                 left: volumePos.x + volumePos.w / 2 - 15,
                 top: volumePos.y - 145,
-                borderRadius: 8,
+                borderRadius: 5,
+                borderWidth: 1,
+                borderColor: "#333",
                 paddingVertical: 10,
               }}>
                 <VerticalSlider
@@ -154,8 +162,8 @@ export default function Player() {
                   value={Volume}
                   onChange={(value) => {
                     setVolume(value);
+                    value <= 0.03 ? player.muted = true : player.muted = false
                     player.volume = value;
-                    console.log("Volume set to:", Volume);
                   }}
                 />
               </View>
@@ -171,13 +179,13 @@ export default function Player() {
           </TouchableOpacity>
           <View style={{height: 40, width: 2, backgroundColor: "#797979ff", marginHorizontal: 10}}>
           </View>
-          <TouchableOpacity style={{paddingVertical: 5}}>
+          <TouchableOpacity style={{paddingVertical: 5}} onPress={prev}>
             <MaterialIcons name="skip-previous" size={25} color="#dfdfdfff" />
           </TouchableOpacity >
           <TouchableOpacity style={{padding: 5}} onPress={togglePlayPause}>
             <MaterialIcons name={status?.playing ? "pause" : "play-arrow"} size={40} color="#dfdfdfff" />
           </TouchableOpacity>
-          <TouchableOpacity style={{paddingVertical: 5}}>
+          <TouchableOpacity style={{paddingVertical: 5}} onPress={()=> next()}>
             <MaterialIcons name="skip-next" size={25} color="#dfdfdfff" />
           </TouchableOpacity>
         </View>

@@ -8,10 +8,10 @@ import Animated, { runOnJS, useAnimatedStyle, useSharedValue, withTiming } from 
 
 interface Song {
   id: number;
-  title: string;
-  videoId: string;
-  thumbnail: string;
-  duration: number;
+  title: string,
+  videoId: string,
+  urlThumbnail: string
+  duration: number
 }
 
 interface PlayListData {

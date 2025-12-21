@@ -15,14 +15,14 @@ export default function Search() {
 
     const [searchSong, setSearchSong] = useState("");
     const [isLoading, setisLoading] = useState(false);
-    const [listMusic, setlistMusic] = useState<videoResult[]>([]);
-    const {playSong, currentSong, PlayerHeight} = useAudio(); 
+    const [resultList, setresultList] = useState<videoResult[]>([]);
+    const {queueAndPlay, currentSong, PlayerHeight, setQueue} = useAudio(); 
 
     async function fetchMusic(){
         setisLoading(true);
         try {  
             const request = await axiosInstance.get(`/api/audio/search?searchSong=${encodeURIComponent(searchSong)}`);
-            setlistMusic(request.data);
+            setresultList(request.data);
             console.log(request.data)
         } catch (error) {
             console.log(error);
@@ -64,15 +64,12 @@ export default function Search() {
                     </View>
                 ) : (
                 <View style={{ width: "100%", flex: 1 }}>
-                    {listMusic.map((music) => (
+                    {resultList.map((music, index) => (
                         <TouchableOpacity
                             key={music.videoId}
-                            onPress={() => playSong({
-                                videoId: music.videoId,
-                                title: music.title,
-                                thumbnail: music.urlThumbnail,
-                                duration: music.duration,
-                            })}
+                            onPress={() => {
+                                queueAndPlay(resultList, index);
+                            }}
                             style={{
                                 display: "flex",
                                 flex: 1,
@@ -101,8 +98,4 @@ export default function Search() {
            
         </View>
     );
-}
-
-function userSafeAreaInsets() {
-    throw new Error('Function not implemented.');
 }

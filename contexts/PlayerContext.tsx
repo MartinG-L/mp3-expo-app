@@ -9,7 +9,9 @@ type AudioContextType = {
   currentSong: string | null;
   player: AudioPlayer;
   status: ReturnType<typeof useAudioPlayerStatus>;
-  playSong: (SongData: SongData) => void;
+  queueAndPlay: (queue: SongData[],  index: number) => void;
+  next: () => void;
+  prev: () => void;
   togglePlayPause: () => void;
   handleLike: () => void;
   Thumbnail: string | null;
@@ -18,16 +20,18 @@ type AudioContextType = {
   PlayerHeight: number;
   setPlayerHeight:  React.Dispatch<React.SetStateAction<number>>;
   setLikedSongs: React.Dispatch<React.SetStateAction<Set<string>>>;
+  setQueue: React.Dispatch<React.SetStateAction<SongData[]>>;
+  setCurrentIndex: React.Dispatch<React.SetStateAction<number>>;
   likedSongs: Set<string>;
   isLiked: boolean;
   updatePlaylist: boolean;
 };
 
 type SongData = {
-  videoId: string;
-  title: string;
-  thumbnail: string;
-  duration: number;
+  title: string,
+  videoId: string,
+  urlThumbnail: string
+  duration: number
   isLiked?: boolean;
 };
 
@@ -47,9 +51,15 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [isLiked, setIsLiked] = useState(false);
   const [likedSongs, setLikedSongs] = useState<Set<string>>(new Set());
   const [updatePlaylist, setupdatePlaylist] = useState(false);
+  const [queue, setQueue] = useState<SongData[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
 
   useEffect(() => {
+    const song: SongData = queue[currentIndex];
+    if(song){
+      playCurrentSong(song);
+    }
     const loadLikedSongs = async () => {
       try {
         const stored = await AsyncStorage.getItem("likedSongs");
@@ -72,7 +82,7 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     };
     loadLikedSongs();
     configureAudio();
-  }, []);
+  }, [currentIndex, queue]);
 
 
   if(status.didJustFinish){
@@ -80,8 +90,27 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     player.pause();
   }
 
-  const playSong = async (song: SongData) => {
+  const next = async () => {
+    console.log("Next song");
+    if(queue.length === 0) return;
+    setCurrentIndex((i)=>{
+      const nextIndex = i + 1;
+      return nextIndex < queue.length ? nextIndex : 0;
+    })
+  };
+
+  const prev = () => {
+    console.log("Prev song");
+    if (queue.length === 0) return;
+    setCurrentIndex((i) => {
+      const prevIndex = i - 1;
+      return prevIndex >= 0 ? prevIndex : queue.length - 1;
+    });
+  };
+
+  const playCurrentSong = async (song: SongData) => {
     if (!audioReady) return;
+
 
     const liked = likedSongs.has(song.videoId)
     setIsLiked(liked);
@@ -96,13 +125,18 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const mediaUrl = request.data;
       player.replace({ uri: mediaUrl });
       setCurrentSongData(song);
-      setThumbnail(song.thumbnail);
+      setThumbnail(song.urlThumbnail);
       setDuration(song.duration);
       setCurrentSong(song.title);
       player.play();
     } catch (error) {
       console.error("Error al obtener el streamUrl:", error);
     }
+  };
+
+  const queueAndPlay = (newQueue: SongData[], index: number) => {
+    setQueue(newQueue);
+    setCurrentIndex(index);
   };
 
   const handleLike = () => {
@@ -133,7 +167,7 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         const payload = {
           videoId: currentSongData?.videoId,
           title: currentSongData?.title,
-          thumbnail: currentSongData?.thumbnail,
+          thumbnail: currentSongData?.urlThumbnail,
           duration: currentSongData?.duration
         };
 
@@ -176,7 +210,9 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       currentSong,
       player,
       status,
-      playSong,
+      queueAndPlay,
+      next,
+      prev,
       togglePlayPause,
       Thumbnail,
       seekTo,
@@ -188,6 +224,8 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setLikedSongs,
       likedSongs,
       updatePlaylist,
+      setQueue,
+      setCurrentIndex
     }}>
       {children}
     </AudioContext.Provider>
