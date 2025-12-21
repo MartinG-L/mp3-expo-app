@@ -26,7 +26,6 @@
     "clsx": "^2.1.1",
     "expo": "~54.0.25",
     "expo-audio": "~1.0.14",
-    "expo-av": "~16.0.7",
     "expo-blur": "~15.0.8",
     "expo-constants": "~18.0.11",
     "expo-font": "~14.0.9",
