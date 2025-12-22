@@ -6,7 +6,6 @@ import React, { createContext, useContext, useEffect, useRef, useState } from "r
 import { useAuth } from "./AuthContext";
 
 type AudioContextType = {
-  currentSong: string | null;
   player: AudioPlayer;
   status: ReturnType<typeof useAudioPlayerStatus>;
   queueAndPlay: (queue: SongData[],  index: number) => void;
@@ -15,7 +14,6 @@ type AudioContextType = {
   togglePlayPause: () => void;
   handleLike: () => void;
   Thumbnail: string | null;
-  seekTo: (seconds: number) => void;
   Duration: number;
   PlayerHeight: number;
   setPlayerHeight:  React.Dispatch<React.SetStateAction<number>>;
@@ -27,6 +25,9 @@ type AudioContextType = {
   likedSongs: Set<string>;
   isLiked: boolean;
   updatePlaylist: boolean;
+  setListUserPlaylist: React.Dispatch<React.SetStateAction<PlaylistsUser[]>>;
+  listUserPlaylist: PlaylistsUser[]
+  currentSongData: SongData | null;
 };
 
 type SongData = {
@@ -37,12 +38,21 @@ type SongData = {
   isLiked?: boolean;
 };
 
+interface PlaylistsUser {
+  id: number;
+  name: String;
+  description: String;
+  thumbnail: String;
+  created_at: number;
+  is_default: boolean;
+  songs: SongData[];
+}
+
 const AudioContext = createContext<AudioContextType | undefined>(undefined);
 
 export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const player = useAudioPlayer();
   const status = useAudioPlayerStatus(player);
-  const [currentSong, setCurrentSong] = useState<string | null>(null);
   const [audioReady, setAudioReady] = useState(false);
   const [Thumbnail, setThumbnail] = useState<string | null>(null);
   const {token, userId} = useAuth();
@@ -52,6 +62,7 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [currentSongData, setCurrentSongData] = useState<SongData | null>(null);
   const [isLiked, setIsLiked] = useState(false);
   const [likedSongs, setLikedSongs] = useState<Set<string>>(new Set());
+  const [listUserPlaylist, setListUserPlaylist] = useState<PlaylistsUser[]>([]);
   const [updatePlaylist, setupdatePlaylist] = useState(false);
   const [queue, setQueue] = useState<SongData[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -130,7 +141,6 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setCurrentSongData(song);
       setThumbnail(song.urlThumbnail);
       setDuration(song.duration);
-      setCurrentSong(song.title);
       player.play();
     } catch (error) {
       console.error("Error al obtener el streamUrl:", error);
@@ -188,14 +198,6 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
 
-  const seekTo = (seconds: number) => {
-    if (!player || !currentSong || !token) return;
-    const url = `http://192.168.100.6:8080/api/audio/stream-ytdlp?searchSong=${encodeURIComponent(currentSong)}&token=${token}&start=${seconds}`;
-
-    player.replace({ uri: url });
-    player.play();
-  };
-
   const togglePlayPause = () => {
     if (!player) return;
     // Lo tenia por lo de ffmpeg + ytdlp que no servia bien el seekTo
@@ -210,7 +212,6 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   return (
     <AudioContext.Provider value={{
-      currentSong,
       player,
       status,
       queueAndPlay,
@@ -218,7 +219,6 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       prev,
       togglePlayPause,
       Thumbnail,
-      seekTo,
       Duration,
       setPlayerHeight,
       PlayerHeight,
@@ -230,7 +230,10 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setQueue,
       setCurrentIndex,
       setTabBarHeight,
-      tabBarHeight
+      tabBarHeight,
+      setListUserPlaylist,
+      listUserPlaylist,
+      currentSongData
     }}>
       {children}
     </AudioContext.Provider>

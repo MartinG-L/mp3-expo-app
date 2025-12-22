@@ -4,9 +4,9 @@ import { Text } from '@/components/mytext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAudio } from '@/contexts/PlayerContext';
 import { MaterialIcons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
 import { ScrollView, TouchableOpacity, View } from 'react-native';
-import axiosInstance from '../utils/axiosInstance';
 
 
 export default function HomeScreen() {
@@ -17,6 +17,7 @@ export default function HomeScreen() {
     thumbnail: String;
     createdAt: number;
     isDefault: boolean;
+    songs: Song[];
   }
 
   interface Song {
@@ -38,7 +39,7 @@ export default function HomeScreen() {
   }
 
   const {logout, userId, token} = useAuth();
-  const {setQueue, currentSong, PlayerHeight} = useAudio(); 
+  const {setQueue, currentSongData, PlayerHeight, setListUserPlaylist, listUserPlaylist} = useAudio(); 
   const [playLists, setplayLists] = useState<Playlists[]>([]);
   const [playListData, setplayListData] = useState<PlayListData | null>(null);
   const [ModalPlaylistVisible, setModalPlaylistVisible] = useState(false);
@@ -53,8 +54,11 @@ export default function HomeScreen() {
 
   async function fetchPlaylist(){
     try {    
-      const request = await axiosInstance.get(`/api/albums?userId=${Number(userId)}`)
-      setplayLists(request.data)
+      const playlists = await AsyncStorage.getItem("listUserPlaylist");
+      if(playlists){
+        const parse: Playlists[] = JSON.parse(playlists);
+        setplayLists(parse);
+      }
     } catch (error: any) {
       if(!error.response){
         setErrorMessage("No se pudo conectar al servidor.");
@@ -68,11 +72,10 @@ export default function HomeScreen() {
 
   useEffect(() => {
     if (userId && token) {
-      fetchPlaylist();
     }
-  }, [userId, token]);
+  }, [userId, token, ]);
 
-  async function handlePlaylistModal(playlist: Playlists) {
+  async function handlePlaylistModal(playlist: any) {
     setLoadingSongsPlaylist(true);
     setModalPlaylistVisible(true);
     setIsDefault(playlist.isDefault);
@@ -81,12 +84,11 @@ export default function HomeScreen() {
     settitlePlaylist(playlist.name.toString())
     setDescriptionPlaylist(playlist.description.toString());
     try { 
-      const req = await axiosInstance.get(`/api/albums/${playlist.id}/songs`);
-      const playlistSongs = req.data.map((song: any) => ({
+      const playlistSongs = playlist.songs.map((song: any) => ({
         id: song.id,
         title: song.title,
         videoId: song.videoId,
-        urlThumbnail: song.thumbnail,
+        urlThumbnail: song.urlThumbnail,
         duration: song.duration,
       }));
       setplayListData({
@@ -109,7 +111,7 @@ export default function HomeScreen() {
       <View style={{
         display: 'flex',
         flex: 1,
-        marginBottom: currentSong ? PlayerHeight : 0,
+        marginBottom: currentSongData ? PlayerHeight : 0,
       }}>
 
       {/* Header "Tus Playlist" */}
@@ -141,7 +143,7 @@ export default function HomeScreen() {
       <ScrollView>
         <View style={{display: "flex", flex: 1, width: "100%"}}>
       
-          {playLists?.map((playlist)=>(
+          {listUserPlaylist?.map((playlist)=>(
             <TouchableOpacity key={playlist.id} style={{
               backgroundColor: "#111",
               paddingHorizontal: 20,
@@ -171,7 +173,6 @@ export default function HomeScreen() {
           isDefault={isDefault}
           title={modalTitlePlaylist}
           onDeleted={() => {
-            fetchPlaylist();
             setModalPlaylistVisible(false);
             setplayListData(null);
           }}
@@ -188,7 +189,6 @@ export default function HomeScreen() {
           titlePlaylist={titlePlaylist}
           descriptionPlaylist={descriptionPlaylist}
           onSave={() => {
-            fetchPlaylist();
             setModalPlaylistVisible(false);
           }}
           isEditingPlaylist={isEditing}

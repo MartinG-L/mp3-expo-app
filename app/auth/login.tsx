@@ -15,7 +15,7 @@ export default function Login() {
     const [error, setError] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const {saveToken, saveUserId, isLoggingIn} = useAuth();
-    const {setLikedSongs, likedSongs} = useAudio();
+    const {setLikedSongs, likedSongs, setListUserPlaylist, listUserPlaylist} = useAudio();
 
     const isDisabled = !username.trim() || !password.trim() || isLoading;
 
@@ -43,11 +43,48 @@ export default function Login() {
         saveToken(jwtToken);
         saveUserId(userId);
 
+        // Guardar videosiDs de favoritos ** Actualizar despues con la lista de playlist global
         const videosIds: string[] = (await axiosInstance.get(`/api/albums/${userId}/liked-songs-ids`)).data;
         const newSet = new Set(videosIds);
         setLikedSongs(newSet); 
         await AsyncStorage.removeItem("likedSongs");
         await AsyncStorage.setItem("likedSongs", JSON.stringify(Array.from(newSet))); 
+        // Cargar playlists completas para guardar en asyns storage
+        const reqPlaylists = await axiosInstance.get(
+          `/api/albums?userId=${Number(userId)}`
+        );
+
+        const FullPlaylist = await Promise.all(
+          reqPlaylists.data.map(async (playlist: any) => {
+            const reqSongs = await axiosInstance.get(
+              `/api/albums/${playlist.id}/songs`
+            );
+
+            return {
+              id: playlist.id,
+              name: playlist.name,
+              description: playlist.description,
+              urlThumbnail: playlist.thumbnail,
+              created_at: playlist.createdAt,
+              is_default: playlist.isDefault,
+              songs: reqSongs.data.map((song: any) => {
+                return {
+                  id: song.id,
+                  title: song.title,
+                  videoId: song.videoId,
+                  urlThumbnail: song.thumbnail,
+                  duration: song.duration,
+                };
+              }),
+            };
+          })
+        );
+        setListUserPlaylist(FullPlaylist);
+        await AsyncStorage.removeItem("listUserPlaylist");
+        await AsyncStorage.setItem(
+          "listUserPlaylist",
+          JSON.stringify(FullPlaylist)
+        );
         await delay(1200);
         router.replace("/(tabs)");
       } catch (e: any) {

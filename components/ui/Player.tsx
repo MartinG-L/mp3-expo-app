@@ -12,10 +12,11 @@ import Animated, {
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import VerticalSlider from "../VerticalSlider";
+import ModalSelectAlbum from "../modals/ModalSelectAlbum";
 
 export default function Player() {
   const { 
-    currentSong,
+    currentSongData,
     status,
     player,
     togglePlayPause,
@@ -34,6 +35,7 @@ export default function Player() {
   const { width: screenWidth } = Dimensions.get('window');
   const [Volume, setVolume] = useState(0.5);
   const [modalVolumeVisble, setModalVolumeVisble] = useState(false);
+  const [modalSaveInAlbumVisible, setModalSaveInAlbumVisible] = useState(false);
 
   const volumeRef = useRef<View>(null);
   const [volumePos, setVolumePos] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
@@ -43,6 +45,10 @@ export default function Player() {
   const fullScreenY = useSharedValue(1000);
   const [shouldRender, setShouldRender] = useState(false);
   const OFFSCREEN_Y = height + 100;
+
+  const handleSaveInAlbum = () => {
+    setModalSaveInAlbumVisible(false);
+  };
 
   const fullScreenStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: fullScreenY.value }],
@@ -64,8 +70,8 @@ export default function Player() {
     }
     modalVolumeVisble && measureVolumeBtn();
     setnewThumbnail(Thumbnail);
-    setUpdateCurrentSong(currentSong);
-  }, [Thumbnail, currentSong, width, height, player.volume, Volume, isFullScreen]);
+    setUpdateCurrentSong(currentSongData?.title ?? "");
+  }, [Thumbnail, currentSongData, width, height, player.volume, Volume, isFullScreen]);
   // Protegimos que player exista
   if (!player) return null;
   // Formatear tiempo mm:ss
@@ -104,7 +110,7 @@ export default function Player() {
         const { height } = event.nativeEvent.layout;
         setPlayerHeight(height);
       }}
-      style={{display: currentSong ? "flex" : "none", backgroundColor: "#121212", borderTopWidth: 2, borderTopColor: "#333", flex: 1}}>
+      style={{display: currentSongData ? "flex" : "none", backgroundColor: "#121212", borderTopWidth: 2, borderTopColor: "#333", flex: 1}}>
       {/* FullScreen */}
       {shouldRender && (
       <PortalPrimitive.Portal name="root">
@@ -166,7 +172,7 @@ export default function Player() {
         width: "100%",
         flex: 1
       }}>
-        <Text style={{color:"white", fontWeight: "bold", fontSize: 15, textAlign: "center"}}>{currentSong}</Text>
+        <Text style={{color:"white", fontWeight: "bold", fontSize: 15, textAlign: "center"}}>{currentSongData?.title}</Text>
       </View>
       {/* SLIDER */}
       <View style={{paddingVertical: 3, display:"flex", flexDirection:"row", alignItems: "center"}}>
@@ -257,8 +263,13 @@ export default function Player() {
             </Modal>
           )}
 
-          <TouchableOpacity style={{padding: 5}}>
+          <TouchableOpacity style={{padding: 5}} onPress={()=>{setModalSaveInAlbumVisible(true)}}>
             <MaterialIcons name="add-box" size={28} color="#dfdfdfff" />
+            <ModalSelectAlbum 
+              visible={modalSaveInAlbumVisible}
+              onClose={() => setModalSaveInAlbumVisible(false)}
+              onSelect={()=>{handleSaveInAlbum()}} 
+            />
           </TouchableOpacity>
           <TouchableOpacity style={{padding: 5}} onPress={handleLike}>
             <MaterialIcons name="favorite" size={28} color={isLiked ? "#FFD700" : "white"} />

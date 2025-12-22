@@ -1,6 +1,8 @@
 import axiosInstance from "@/app/utils/axiosInstance";
 import { Text } from '@/components/mytext';
+import { useAudio } from "@/contexts/PlayerContext";
 import { MaterialIcons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { BlurView } from "expo-blur";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, Keyboard, KeyboardAvoidingView, Platform, Pressable, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from "react-native";
@@ -51,6 +53,7 @@ export default function ModalCreatePlaylist({
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const {setListUserPlaylist, listUserPlaylist} = useAudio();
   const isWeb = Platform.OS === "web";
   const [isMounted, setisMounted] = useState(false);
 
@@ -91,6 +94,26 @@ export default function ModalCreatePlaylist({
       }
       const req = await axiosInstance.post("/api/albums/create", params)
       if(req.status == 200){
+          const newPlaylist = {
+          id: req.data.id,
+          name: req.data.name,
+          description: req.data.description,
+          thumbnail: req.data.thumbnail ?? "",
+          created_at: Date.now(),
+          is_default: false,
+          songs: []
+        };
+
+        setListUserPlaylist(prev => {
+          const updated = [...prev, newPlaylist];
+
+          AsyncStorage.setItem(
+            "listUserPlaylist",
+            JSON.stringify(updated)
+          );
+
+          return updated;
+        });
         onSave();
         setModalCreatePlaylistVisible(false);
       }
@@ -102,7 +125,7 @@ export default function ModalCreatePlaylist({
   }
 
   const editPlaylist = async ()=>{
-    if(IsDisabled) return;
+    if (IsDisabled || !playListData?.id) return;
     setIsLoading(true)
     try {
       const params = {
@@ -111,7 +134,24 @@ export default function ModalCreatePlaylist({
         albumId: playListData?.id
       }
       const req = await axiosInstance.put("/api/albums", params)
+      console.log(req.data);
       if(req.status == 200){
+        const updatedData = req.data;
+
+        setListUserPlaylist(prev => {
+          const updated = prev.map(p =>
+            p.id === playListData.id
+              ? { ...p, ...updatedData }
+              : p
+          );
+
+          AsyncStorage.setItem(
+            "listUserPlaylist",
+            JSON.stringify(updated)
+          );
+
+          return updated;
+        });
         onSave();
         setModalCreatePlaylistVisible(false);
       }

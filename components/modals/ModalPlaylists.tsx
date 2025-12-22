@@ -1,6 +1,7 @@
 import axiosInstance from '@/app/utils/axiosInstance';
 import { useAudio } from '@/contexts/PlayerContext';
 import { MaterialIcons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as PopoverPrimitive from '@rn-primitives/popover';
 import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { PopoverContent, PopoverTrigger } from '../ui/popover';
@@ -45,12 +46,22 @@ export default function ModalPlaylists({
   setIsEditing,
   setModalCreatePlaylistVisible
 }: ModalPlaylistsProps){
-    const {queueAndPlay, currentSong, PlayerHeight} = useAudio();
+    const {queueAndPlay, setListUserPlaylist} = useAudio();
 
     const deletePlaylist = async ()=>{
       if(playListData?.is_default) return;
       try {
         await axiosInstance.delete(`/api/albums/${playListData?.id}`)
+        setListUserPlaylist(prev => {
+          const updated = prev.filter(p => p.id !== playListData?.id);
+
+          AsyncStorage.setItem(
+            "listUserPlaylist",
+            JSON.stringify(updated)
+          );
+
+          return updated;
+        });
         setIsEditing(false);
         onDeleted();
       } catch (error) {
