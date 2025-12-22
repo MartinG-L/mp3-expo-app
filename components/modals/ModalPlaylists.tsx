@@ -3,7 +3,7 @@ import { useAudio } from '@/contexts/PlayerContext';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as PopoverPrimitive from '@rn-primitives/popover';
 import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { PopoverContent, PopoverTrigger } from './popover';
+import { PopoverContent, PopoverTrigger } from '../ui/popover';
 
 interface Song {
   id: number;

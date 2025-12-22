@@ -1,6 +1,6 @@
+import ModalCreatePlaylist from '@/components/modals/ModalCreatePlaylist';
+import ModalPlaylists from '@/components/modals/ModalPlaylists';
 import { Text } from '@/components/mytext';
-import ModalCreatePlaylist from '@/components/ui/ModalCreatePlaylist';
-import ModalPlaylists from '@/components/ui/ModalPlaylists';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAudio } from '@/contexts/PlayerContext';
 import { MaterialIcons } from '@expo/vector-icons';
