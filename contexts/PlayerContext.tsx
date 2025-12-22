@@ -22,6 +22,8 @@ type AudioContextType = {
   setLikedSongs: React.Dispatch<React.SetStateAction<Set<string>>>;
   setQueue: React.Dispatch<React.SetStateAction<SongData[]>>;
   setCurrentIndex: React.Dispatch<React.SetStateAction<number>>;
+  setTabBarHeight: React.Dispatch<React.SetStateAction<number>>;
+  tabBarHeight: number;
   likedSongs: Set<string>;
   isLiked: boolean;
   updatePlaylist: boolean;
@@ -53,6 +55,7 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [updatePlaylist, setupdatePlaylist] = useState(false);
   const [queue, setQueue] = useState<SongData[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [tabBarHeight, setTabBarHeight] = useState(0);
 
 
   useEffect(() => {
@@ -225,7 +228,9 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       likedSongs,
       updatePlaylist,
       setQueue,
-      setCurrentIndex
+      setCurrentIndex,
+      setTabBarHeight,
+      tabBarHeight
     }}>
       {children}
     </AudioContext.Provider>

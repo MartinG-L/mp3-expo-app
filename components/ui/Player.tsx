@@ -26,7 +26,8 @@ export default function Player() {
     isLiked,
     prev,
     next,
-    PlayerHeight
+    PlayerHeight,
+    tabBarHeight
   } = useAudio();
   let [newThumbnail, setnewThumbnail] = useState<string | null>(null);
   let [UpdateCurrentSong, setUpdateCurrentSong] = useState<string|null>(null);
@@ -115,7 +116,7 @@ export default function Player() {
               top: 0,
               left: 0,
               right: 0,
-              bottom: PlayerHeight + insets.bottom + 49 + insets.top,
+              bottom: tabBarHeight + insets.bottom + PlayerHeight,
               backgroundColor: "black",
               zIndex: 50,
             }, fullScreenStyle
@@ -126,7 +127,7 @@ export default function Player() {
             onPress={() => setIsFullScreen(false)}
             style={{
               position: "absolute",
-              top: 25,
+              top: 20,
               alignSelf: "center",
               zIndex: 10,
               padding: 20,

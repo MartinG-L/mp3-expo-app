@@ -1,6 +1,7 @@
+import { MeasuredTabBar } from '@/components/MeasuredTabBar';
 import Player from '@/components/ui/Player';
 import { UserPopoverTab } from '@/components/UserPopoverTab';
-import { AudioProvider } from '@/contexts/PlayerContext';
+import { useAudio } from '@/contexts/PlayerContext';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import React from 'react';
@@ -9,16 +10,22 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 
 
+
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
-  const tabBarHeight = insets.bottom + 49; 
+  const{ tabBarHeight } = useAudio();
+
+  
   return (
-      <AudioProvider>
-        <Tabs screenOptions={{
-          headerShown: false,
-          tabBarActiveTintColor: "#FFD700",   
-          tabBarInactiveTintColor: "#888888", 
-        }}>
+      <>
+        <Tabs
+          screenOptions={{
+            headerShown: false,
+            tabBarActiveTintColor: "#FFD700",
+            tabBarInactiveTintColor: "#888888",
+          }}
+          tabBar={(props) => <MeasuredTabBar {...props}/>}
+        >
           
           <Tabs.Screen
           name="index"
@@ -59,6 +66,6 @@ export default function TabLayout() {
         }}>
           <Player />
         </View>
-      </AudioProvider>
+      </>
   );
 };
