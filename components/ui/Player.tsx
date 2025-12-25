@@ -1,3 +1,4 @@
+import axiosInstance from "@/app/utils/axiosInstance";
 import { useAudio } from "@/contexts/PlayerContext";
 import { MaterialIcons } from '@expo/vector-icons';
 import Slider from '@react-native-community/slider';
@@ -28,7 +29,8 @@ export default function Player() {
     prev,
     next,
     PlayerHeight,
-    tabBarHeight
+    tabBarHeight,
+    setListUserPlaylist
   } = useAudio();
   let [newThumbnail, setnewThumbnail] = useState<string | null>(null);
   let [UpdateCurrentSong, setUpdateCurrentSong] = useState<string|null>(null);
@@ -46,8 +48,61 @@ export default function Player() {
   const [shouldRender, setShouldRender] = useState(false);
   const OFFSCREEN_Y = height + 100;
 
-  const handleSaveInAlbum = () => {
+  const handleSaveInAlbum = async (playlistsId: number[]) => {
+    if (!currentSongData?.videoId) return;
+
+    const albumIds = playlistsId.map(Number);
+
     setModalSaveInAlbumVisible(false);
+
+    const payload = {
+      song: {
+        videoId: currentSongData.videoId,
+        title: currentSongData.title,
+        thumbnail: currentSongData.urlThumbnail,
+        duration: currentSongData.duration,
+      },
+      albumIds,
+    };
+
+    try {
+      const req = await axiosInstance.post(`/api/albums/add/song`, payload);
+      const savedSong = {
+        id: req.data.id,         
+        videoId: req.data.videoId,
+        title: req.data.title,
+        urlThumbnail: req.data.thumbnail,
+        duration: req.data.duration,
+      };
+      setListUserPlaylist(prev =>
+        prev.map(playlist => {
+          const shouldHaveSong = albumIds.includes(playlist.id);
+          const hasSong = playlist.songs.some(
+            s => s.videoId === savedSong.videoId
+          );
+
+          if (shouldHaveSong && !hasSong) {
+            return {
+              ...playlist,
+              songs: [savedSong, ...playlist.songs],
+            };
+          }
+
+          if (!shouldHaveSong && hasSong) {
+            return {
+              ...playlist,
+              songs: playlist.songs.filter(
+                s => s.videoId !== savedSong.videoId
+              ),
+            };
+          }
+
+          return playlist;
+        })
+      );
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const fullScreenStyle = useAnimatedStyle(() => ({
@@ -58,6 +113,7 @@ export default function Player() {
   // Nos aseguramos de que solo se imprima cuando realmente cambie el thumbnail
   // Esto pasa porque en nuestro context el status se va actualizando cada segundo
   useEffect(() => {
+    console.log(currentSongData?.id);
     if (isFullScreen) {
       setShouldRender(true);
       fullScreenY.value = withTiming(0, { duration: 300 });
@@ -268,7 +324,7 @@ export default function Player() {
             <ModalSelectAlbum 
               visible={modalSaveInAlbumVisible}
               onClose={() => setModalSaveInAlbumVisible(false)}
-              onSelect={()=>{handleSaveInAlbum()}} 
+              onSelect={handleSaveInAlbum} 
             />
           </TouchableOpacity>
           <TouchableOpacity style={{padding: 5}} onPress={handleLike}>

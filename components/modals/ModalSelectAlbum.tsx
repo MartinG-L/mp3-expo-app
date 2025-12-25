@@ -5,35 +5,51 @@ import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 interface Props {
     visible: boolean;
     onClose: () => void;
-    onSelect: (albumId: number) => void;
+    onSelect: (playlistsId: number[]) => void;
 }
 
 export default function SelectAlbumModal({ visible, onClose, onSelect }: Props) {
-  const [selectedAlbum, setSelectedAlbum] = useState<number | null>(null);
-  const [existInAlbum, setExistInAlbum] = useState<number | null>(null);
+  const [selectedPlaylist, setSelectedPlaylist] = useState<Set<number>>(new Set());
   const { listUserPlaylist, currentSongData } = useAudio();
 
+  
+
   useEffect(() => {
-    setSelectedAlbum(null);
-    if (!currentSongData) return;
-
-    const found = listUserPlaylist.find(p =>
-        p.songs.some(s => s.videoId === currentSongData.videoId)
-    );
-
-    if (found) {
-        setExistInAlbum(found.id);
-        setSelectedAlbum(found.id);
-    } else {
-        console.log("No se encontro nada")
+    if (!currentSongData) {
+      setSelectedPlaylist(new Set());
+      return;
     }
-  }, [visible]);
 
-  const handleConfirm = () => {
-    if (selectedAlbum !== null) {
-      onSelect(selectedAlbum);
-      onClose();
-    }
+    const selected = listUserPlaylist
+      .filter(p =>
+        p.songs.some(s => s.videoId === currentSongData?.videoId)
+      )
+      .map(p => p.id);
+    setSelectedPlaylist(new Set(selected));
+  }, [currentSongData, listUserPlaylist]);
+
+    const handleConfirm = () => {
+      if (selectedPlaylist !== null) {
+        onSelect(Array.from(selectedPlaylist));
+        onClose();
+      }
+    };
+
+  // Manejo de agregar o quitar cancion de la playlist  
+  const togglePlaylist = (id: number) => {
+    setSelectedPlaylist(prev => {
+      const next = new Set(prev);
+
+      // Si existe lo eliminamos
+      // y sino lo agregamos
+      if (next.has(id)) {
+        next.delete(id); 
+      } else {
+        next.add(id); 
+      }
+
+      return next;
+    });
   };
 
   return (
@@ -51,10 +67,10 @@ export default function SelectAlbumModal({ visible, onClose, onSelect }: Props) 
             <TouchableOpacity
               key={album.id}
               style={styles.radioRow}
-              onPress={() => setSelectedAlbum(album.id)}
+              onPress={() => togglePlaylist(album.id)}
             >
               <View style={styles.radioOuter}>
-                {selectedAlbum === album.id && (
+                {selectedPlaylist.has(album.id) && (
                   <View style={styles.radioInner} />
                 )}
               </View>
@@ -69,12 +85,12 @@ export default function SelectAlbumModal({ visible, onClose, onSelect }: Props) 
 
             <TouchableOpacity
               onPress={handleConfirm}
-              disabled={selectedAlbum === null || selectedAlbum === existInAlbum}
+              disabled={selectedPlaylist === null }
             >
               <Text
                 style={[
                   styles.confirm,
-                  selectedAlbum === existInAlbum && { opacity: 0.5 },
+                  selectedPlaylist === null && { opacity: 0.5 },
                 ]}
               >
                 Guardar

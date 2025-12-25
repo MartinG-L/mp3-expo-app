@@ -71,9 +71,21 @@ export default function HomeScreen() {
   }
 
   useEffect(() => {
-    if (userId && token) {
+    if (playListData && listUserPlaylist) {
+      const updatedPlaylist = listUserPlaylist.find(p => p.id === playListData.id);
+      if (updatedPlaylist) {
+        setplayListData({
+          id: updatedPlaylist.id,
+          name: updatedPlaylist.name,
+          description: updatedPlaylist.description,
+          thumbnail: updatedPlaylist.thumbnail,
+          created_at: updatedPlaylist.created_at,
+          is_default: updatedPlaylist.is_default,
+          songs: updatedPlaylist.songs
+        });
+      }
     }
-  }, [userId, token, ]);
+  }, [listUserPlaylist]);
 
   async function handlePlaylistModal(playlist: any) {
     setLoadingSongsPlaylist(true);

@@ -7,6 +7,7 @@ import axiosInstance from '../utils/axiosInstance';
 
 export default function Search() {
     interface videoResult { 
+        id: number,
         title: string,
         videoId: string,
         urlThumbnail: string
@@ -16,7 +17,7 @@ export default function Search() {
     const [searchSong, setSearchSong] = useState("");
     const [isLoading, setisLoading] = useState(false);
     const [resultList, setresultList] = useState<videoResult[]>([]);
-    const {queueAndPlay, currentSong, PlayerHeight, setQueue} = useAudio(); 
+    const {queueAndPlay, currentSongData, PlayerHeight} = useAudio(); 
 
     async function fetchMusic(){
         setisLoading(true);
@@ -36,7 +37,7 @@ export default function Search() {
             display: 'flex',
             alignItems: 'center',
             flex: 1,
-            marginBottom: currentSong ? PlayerHeight : 0,
+            marginBottom: currentSongData ? PlayerHeight : 0,
         }}>
             <Stack.Screen options={{ title: "Buscar" }} />
             <TextInput

@@ -48,6 +48,7 @@ export default function ModalPlaylists({
 }: ModalPlaylistsProps){
     const {queueAndPlay, setListUserPlaylist} = useAudio();
 
+
     const deletePlaylist = async ()=>{
       if(playListData?.is_default) return;
       try {
@@ -68,6 +69,7 @@ export default function ModalPlaylists({
         console.log(error)
       }
     }
+    
 
     return(
       <View style={{ position: "absolute",
