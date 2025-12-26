@@ -85,7 +85,7 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     if(song){
       playCurrentSong(song);
     }
-  }, [currentIndex]);
+  }, [currentIndex, queue]);
 
 
   if(status.didJustFinish){
