@@ -43,12 +43,8 @@ export default function Login() {
         saveToken(jwtToken);
         saveUserId(userId);
 
-        // Guardar videosiDs de favoritos ** Actualizar despues con la lista de playlist global
-        const videosIds: string[] = (await axiosInstance.get(`/api/albums/${userId}/liked-songs-ids`)).data;
-        const newSet = new Set(videosIds);
-        setLikedSongs(newSet); 
-        await AsyncStorage.removeItem("likedSongs");
-        await AsyncStorage.setItem("likedSongs", JSON.stringify(Array.from(newSet))); 
+
+        await AsyncStorage.removeItem("likedSongs"); 
         // Cargar playlists completas para guardar en asyns storage
         const reqPlaylists = await axiosInstance.get(
           `/api/albums?userId=${Number(userId)}`

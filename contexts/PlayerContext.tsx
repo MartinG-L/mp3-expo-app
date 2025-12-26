@@ -1,6 +1,5 @@
 // AudioContext.tsx
 import axiosInstance from "@/app/utils/axiosInstance";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { AudioPlayer, setAudioModeAsync, useAudioPlayer, useAudioPlayerStatus } from "expo-audio";
 import React, { createContext, useContext, useEffect, useRef, useState } from "react";
 import { useAuth } from "./AuthContext";
@@ -35,7 +34,6 @@ type SongData = {
   videoId: string,
   urlThumbnail: string
   duration: number
-  isLiked?: boolean;
 };
 
 interface PlaylistsUser {
@@ -68,23 +66,7 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [currentIndex, setCurrentIndex] = useState(0);
   const [tabBarHeight, setTabBarHeight] = useState(0);
 
-
   useEffect(() => {
-    const song: SongData = queue[currentIndex];
-    if(song){
-      playCurrentSong(song);
-    }
-    const loadLikedSongs = async () => {
-      try {
-        const stored = await AsyncStorage.getItem("likedSongs");
-        if(stored){
-          const parse: string[] = JSON.parse(stored);
-          setLikedSongs(new Set(parse));
-        }
-      } catch (e: any) {
-        console.log(e.error)
-      }
-    };
     const configureAudio = async () => {
       await setAudioModeAsync({
         playsInSilentMode: true,
@@ -94,8 +76,15 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       });
       setAudioReady(true);
     };
-    loadLikedSongs();
     configureAudio();
+  }, []);
+
+
+  useEffect(() => {
+    const song: SongData = queue[currentIndex];
+    if(song){
+      playCurrentSong(song);
+    }
   }, [currentIndex, queue]);
 
 
@@ -124,14 +113,6 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const playCurrentSong = async (song: SongData) => {
     if (!audioReady) return;
-    const liked = likedSongs.has(song.videoId)
-    setIsLiked(liked);
-
-    // if (currentSongData?.videoId === song.videoId) { 
-    //   togglePlayPause();
-    //   return;
-    // } 
-
     let mediaUrl = "";
     try {
       if(!song.videoId){
@@ -157,6 +138,12 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const queueAndPlay = (newQueue: SongData[], index: number) => {
+    const clickedSong = newQueue[index];
+    if(currentSongData?.videoId === clickedSong.videoId){
+      togglePlayPause();
+      return;
+    }
+
     setQueue(newQueue);
     setCurrentIndex(index);
   };
