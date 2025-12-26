@@ -116,24 +116,27 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const playCurrentSong = async (song: SongData) => {
     if (!audioReady) return;
+    let finalSong = song;
     let mediaUrl = "";
     try {
       if(!song.videoId){
         const searchSong = await axiosInstance.get("/api/audio/search?searchSong=" + encodeURIComponent(song.title) + "&fromSearchPrecise=true");
-        const videoId = (searchSong.data[0].videoId);
-        song.duration = searchSong.data[0].duration;
-        song.urlThumbnail = searchSong.data[0].urlThumbnail;
-        song.videoId = videoId;
-        const request = await axiosInstance.get(`/api/audio/newstream?videoId=${encodeURIComponent(videoId)}`);
+        finalSong = {
+          ...song,
+          videoId: searchSong.data[0].videoId,
+          duration: searchSong.data[0].duration,
+          urlThumbnail: searchSong.data[0].urlThumbnail,
+        };
+        const request = await axiosInstance.get(`/api/audio/newstream?videoId=${encodeURIComponent(finalSong.videoId)}`);
         mediaUrl = request.data;
       } else {
         const request = await axiosInstance.get(`/api/audio/newstream?videoId=${encodeURIComponent(song.videoId)}`);
         mediaUrl = request.data;
       }
       player.replace({ uri: mediaUrl });
-      setCurrentSongData(song);
-      setThumbnail(song.urlThumbnail);
-      setDuration(song.duration);
+      setCurrentSongData(finalSong);
+      setThumbnail(finalSong.urlThumbnail);
+      setDuration(finalSong.duration);
       player.play();
     } catch (error) {
       console.error("Error al obtener el streamUrl:", error);
