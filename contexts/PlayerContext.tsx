@@ -125,19 +125,28 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const playCurrentSong = async (song: SongData) => {
     if (!audioReady) return;
-
-
     const liked = likedSongs.has(song.videoId)
     setIsLiked(liked);
 
-    if (currentSongData?.videoId === song.videoId) { 
-      togglePlayPause();
-      return;
-    } 
+    // if (currentSongData?.videoId === song.videoId) { 
+    //   togglePlayPause();
+    //   return;
+    // } 
 
+    let mediaUrl = "";
     try {
-      const request = await axiosInstance.get(`/api/audio/newstream?videoId=${encodeURIComponent(song.videoId)}`);
-      const mediaUrl = request.data;
+      if(!song.videoId){
+        const searchSong = await axiosInstance.get("/api/audio/search?searchSong=" + encodeURIComponent(song.title) + "&fromSearchPrecise=true");
+        const videoId = (searchSong.data[0].videoId);
+        song.duration = searchSong.data[0].duration;
+        song.urlThumbnail = searchSong.data[0].urlThumbnail;
+        song.videoId = videoId;
+        const request = await axiosInstance.get(`/api/audio/newstream?videoId=${encodeURIComponent(videoId)}`);
+        mediaUrl = request.data;
+      } else {
+        const request = await axiosInstance.get(`/api/audio/newstream?videoId=${encodeURIComponent(song.videoId)}`);
+        mediaUrl = request.data;
+      }
       player.replace({ uri: mediaUrl });
       setCurrentSongData(song);
       setThumbnail(song.urlThumbnail);

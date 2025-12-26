@@ -113,7 +113,6 @@ export default function Player() {
   // Nos aseguramos de que solo se imprima cuando realmente cambie el thumbnail
   // Esto pasa porque en nuestro context el status se va actualizando cada segundo
   useEffect(() => {
-    console.log(currentSongData?.id);
     if (isFullScreen) {
       setShouldRender(true);
       fullScreenY.value = withTiming(0, { duration: 300 });
