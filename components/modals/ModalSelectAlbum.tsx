@@ -1,4 +1,5 @@
 import { useAudio } from '@/contexts/PlayerContext';
+import { MaterialIcons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
 import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
@@ -61,26 +62,30 @@ export default function SelectAlbumModal({ visible, onClose, onSelect }: Props) 
     >
       <View style={styles.overlay}>
         <View style={styles.container}>
-          <Text style={styles.title}>Seleciona una Playlist</Text>
+          <Text style={styles.title}>TUS PLAYLIST</Text>
 
           {listUserPlaylist.map(album => (
             <TouchableOpacity
               key={album.id}
               style={styles.radioRow}
               onPress={() => togglePlaylist(album.id)}
-            >
-              <View style={styles.radioOuter}>
-                {selectedPlaylist.has(album.id) && (
-                  <View style={styles.radioInner} />
+            > 
+              <View style={{flex: 1, width: '100%'}}>
+                <Text style={styles.radioText}>{album.name}</Text>
+              </View>
+              <View style={{height: 22, width: 22}}>
+                {selectedPlaylist.has(album.id) ? (
+                  <MaterialIcons  name="check-circle" size={23} color="#FFD700" />
+                ) : (
+                  <View style={styles.radioOuter}/>
                 )}
               </View>
-              <Text style={styles.radioText}>{album.name}</Text>
             </TouchableOpacity>
           ))}
 
           <View style={styles.actions}>
             <TouchableOpacity onPress={onClose}>
-              <Text style={styles.cancel}>Cancelar</Text>
+              <Text style={styles.cancel}>CANCELAR</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -93,7 +98,7 @@ export default function SelectAlbumModal({ visible, onClose, onSelect }: Props) 
                   selectedPlaylist === null && { opacity: 0.5 },
                 ]}
               >
-                Guardar
+                GUARDAR
               </Text>
             </TouchableOpacity>
           </View>
@@ -112,35 +117,31 @@ const styles = StyleSheet.create({
   container: {
     width: '80%',
     backgroundColor: '#1a1a1a',
-    borderRadius: 20,
-    padding: 20,
+    borderRadius: 15,
   },
   title: {
-    fontSize: 22,
+    fontSize: 13,
     fontWeight: '600',
     color: '#fff',
-    marginBottom: 16,
+    textAlign: 'center',
+    borderBottomColor: '#444',
+    borderBottomWidth: 1,
+    paddingVertical: 15,
+    marginBottom: 15,
   },
   radioRow: {
+    paddingHorizontal: 15,
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 14,
+    justifyContent: 'space-between',
+    marginBottom: 15,
   },
   radioOuter: {
-    width: 16,
-    height: 16,
+    width: 20,
+    height: 20,
     borderRadius: 11,
     borderWidth: 1,
     borderColor: '#bbb',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 10,
-  },
-  radioInner: {
-    width: 10,
-    height: 10,
-    borderRadius: 6,
-    backgroundColor: '#bbb',
   },
   radioText: {
     color: '#bbb',
@@ -148,17 +149,20 @@ const styles = StyleSheet.create({
   },
   actions: {
     flexDirection: 'row',
-    justifyContent: 'flex-end',
-    marginTop: 18,
+    justifyContent: 'center',
+    borderTopColor: '#444',
+    borderTopWidth: 1,
   },
   cancel: {
     color: '#999',
     marginRight: 20,
-    fontSize: 15,
+    fontSize: 13,
+    paddingVertical: 15,
   },
   confirm: {
     color: '#FFD700',
-    fontSize: 15,
+    fontSize: 13,
     fontWeight: '600',
+    paddingVertical: 15,
   },
 });
