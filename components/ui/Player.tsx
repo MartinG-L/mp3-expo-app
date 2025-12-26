@@ -22,7 +22,6 @@ export default function Player() {
     player,
     togglePlayPause,
     Thumbnail,
-    handleLike,
     Duration,
     setPlayerHeight,
     isLiked,
@@ -325,9 +324,6 @@ export default function Player() {
               onClose={() => setModalSaveInAlbumVisible(false)}
               onSelect={handleSaveInAlbum} 
             />
-          </TouchableOpacity>
-          <TouchableOpacity style={{padding: 5}} onPress={handleLike}>
-            <MaterialIcons name="favorite" size={28} color={isLiked ? "#FFD700" : "white"} />
           </TouchableOpacity>
           <View style={{height: 40, width: 2, backgroundColor: "#797979ff", marginHorizontal: 10}}>
           </View>

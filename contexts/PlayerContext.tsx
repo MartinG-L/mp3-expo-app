@@ -12,7 +12,6 @@ type AudioContextType = {
   next: () => void;
   prev: () => void;
   togglePlayPause: () => void;
-  handleLike: () => void;
   Thumbnail: string | null;
   Duration: number;
   PlayerHeight: number;
@@ -162,89 +161,89 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setCurrentIndex(index);
   };
 
-  const handleLike = () => {
-    if (!currentSongData) return;
+  // const handleLike = () => {
+  //   if (!currentSongData) return;
     
-    const wasLiked = likedSongs.has(currentSongData.videoId);
-    const nowLiked = !wasLiked;
+  //   const wasLiked = likedSongs.has(currentSongData.videoId);
+  //   const nowLiked = !wasLiked;
     
-    // Cambia el estado visual instantáneamente
-    setIsLiked(nowLiked);
+  //   // Cambia el estado visual instantáneamente
+  //   setIsLiked(nowLiked);
 
-    // Actualiza likedSongs
-    setLikedSongs(prev => {
-      const newSet = new Set(prev);
+  //   // Actualiza likedSongs
+  //   setLikedSongs(prev => {
+  //     const newSet = new Set(prev);
 
-      if (wasLiked) {
-        newSet.delete(currentSongData.videoId);
-      } else {
-        newSet.add(currentSongData.videoId);
-      }
+  //     if (wasLiked) {
+  //       newSet.delete(currentSongData.videoId);
+  //     } else {
+  //       newSet.add(currentSongData.videoId);
+  //     }
 
-      AsyncStorage.setItem("likedSongs", JSON.stringify([...newSet]));
-      return newSet;
-    });
+  //     AsyncStorage.setItem("likedSongs", JSON.stringify([...newSet]));
+  //     return newSet;
+  //   });
 
-    // Actualiza las playlists
-    setListUserPlaylist(prev => {
-      const updatedPlaylists = prev.map(playlist => {
-        if (playlist.is_default) {
-          if (nowLiked) {
-            // Agregar cancion si no existe
-            const songExists = playlist.songs.some(s => s.videoId === currentSongData.videoId);
-            if (!songExists) {
-              const newSong = {
-                id: currentSongData.id,
-                title: currentSongData.title,
-                videoId: currentSongData.videoId,
-                urlThumbnail: currentSongData.urlThumbnail,
-                duration: currentSongData.duration
-              };
-              return {
-                ...playlist,
-                songs: [newSong,...playlist.songs]
-              };
-            }
-          } else {
-            // Eliminar la cancion
-            return {
-              ...playlist,
-              songs: playlist.songs.filter(s => s.videoId !== currentSongData.videoId)
-            };
-          }
-        }
-        return playlist;
-      });
+  //   // Actualiza las playlists
+  //   setListUserPlaylist(prev => {
+  //     const updatedPlaylists = prev.map(playlist => {
+  //       if (playlist.is_default) {
+  //         if (nowLiked) {
+  //           // Agregar cancion si no existe
+  //           const songExists = playlist.songs.some(s => s.videoId === currentSongData.videoId);
+  //           if (!songExists) {
+  //             const newSong = {
+  //               id: currentSongData.id,
+  //               title: currentSongData.title,
+  //               videoId: currentSongData.videoId,
+  //               urlThumbnail: currentSongData.urlThumbnail,
+  //               duration: currentSongData.duration
+  //             };
+  //             return {
+  //               ...playlist,
+  //               songs: [newSong,...playlist.songs]
+  //             };
+  //           }
+  //         } else {
+  //           // Eliminar la cancion
+  //           return {
+  //             ...playlist,
+  //             songs: playlist.songs.filter(s => s.videoId !== currentSongData.videoId)
+  //           };
+  //         }
+  //       }
+  //       return playlist;
+  //     });
 
-      // Actualizamos el AsyncStorage
-      AsyncStorage.setItem("listUserPlaylist", JSON.stringify(updatedPlaylists));
+  //     // Actualizamos el AsyncStorage
+  //     AsyncStorage.setItem("listUserPlaylist", JSON.stringify(updatedPlaylists));
       
-      return updatedPlaylists;
-    });
+  //     return updatedPlaylists;
+  //   });
 
-    // Si había timeout se cancela aquí
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+  //   // Si había timeout se cancela aquí
+  //   if (timeoutRef.current) clearTimeout(timeoutRef.current);
 
-    // Creamos timeout para sincronizar con el backend
-    timeoutRef.current = setTimeout(async () => {
-      try {
-        const payload = {
-          videoId: currentSongData?.videoId,
-          title: currentSongData?.title,
-          thumbnail: currentSongData?.urlThumbnail,
-          duration: currentSongData?.duration
-        };
+  //   // Creamos timeout para sincronizar con el backend
+  //   timeoutRef.current = setTimeout(async () => {
+  //     try {
+  //       const payload = {
+  //         videoId: currentSongData?.videoId,
+  //         title: currentSongData?.title,
+  //         thumbnail: currentSongData?.urlThumbnail,
+  //         duration: currentSongData?.duration
+  //       };
 
-        if (nowLiked) {
-          await axiosInstance.post(`/api/albums/likesong?userId=${userId}`, payload);
-        } else {
-          await axiosInstance.delete(`/api/albums/likesong?userId=${userId}&videoId=${currentSongData.videoId}`);
-        }
-      } catch (error) {
-        console.error("Error updating like:", error);
-      }
-    }, 1000);
-  };
+  //       if (nowLiked) {
+  //         await axiosInstance.post(`/api/albums/likesong?userId=${userId}`, payload);
+  //       } else {
+  //         await axiosInstance.delete(`/api/albums/likesong?userId=${userId}&videoId=${currentSongData.videoId}`);
+  //       }
+  //     } catch (error) {
+  //       console.error("Error updating like:", error);
+  //     }
+  //   }, 1000);
+  // };
 
 
   const togglePlayPause = () => {
@@ -271,7 +270,6 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       Duration,
       setPlayerHeight,
       PlayerHeight,
-      handleLike,
       isLiked,
       setLikedSongs,
       likedSongs,
