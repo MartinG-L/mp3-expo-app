@@ -34,6 +34,7 @@ type SongData = {
   videoId: string,
   urlThumbnail: string
   duration: number
+  recordingId?: string
 };
 
 interface PlaylistsUser {
@@ -139,9 +140,20 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
 
+  // Creamos indentificador logico ya que en quequeAndPlay cuando usamos preciseSearch
+  // no existe el videoId todavia
+  const getSongKey = (song: SongData) =>
+    song.videoId ??
+    song.recordingId ??
+    song.title.toLowerCase();
+
   const queueAndPlay = (newQueue: SongData[], index: number) => {
     const clickedSong = newQueue[index];
-    if(currentSongData?.videoId === clickedSong.videoId){
+
+    if (
+      currentSongData &&
+      getSongKey(currentSongData) === getSongKey(clickedSong)
+    ) {
       togglePlayPause();
       return;
     }
