@@ -88,10 +88,12 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, [currentIndex, queue]);
 
 
-  if(status.didJustFinish){
-    player.seekTo(0);
-    player.pause();
-  }
+  useEffect(() => {
+    if (status.didJustFinish) {
+      player.seekTo(0);
+      player.pause();
+    }
+  }, [status.didJustFinish]);
 
   const next = async () => {
     console.log("Next song");
