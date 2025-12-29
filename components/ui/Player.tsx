@@ -246,7 +246,7 @@ export default function Player() {
           }}
           minimumTrackTintColor="#dadadaff" 
           maximumTrackTintColor={Platform.OS !== "web" ? "#555" : "transparent"}
-          thumbTintColor={Platform.OS !== "web" ? "#555" : "transparent"}
+          thumbTintColor={Platform.OS !== "web" ? "#dadadaff" : "transparent"}
         />
       </View>
       {/* THUMBNAIL */}
