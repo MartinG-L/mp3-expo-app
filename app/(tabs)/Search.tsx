@@ -114,7 +114,7 @@ export default function Search() {
                         flexDirection: "row",
                         marginVertical: 5,
                         alignItems: "center",
-                        paddingVertical: 10,
+                        paddingVertical: precise ? 13 : 10,
                         paddingHorizontal: 7,
                         backgroundColor: "#111",
                         borderRadius: 5,
