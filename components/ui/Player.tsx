@@ -5,7 +5,7 @@ import Slider from '@react-native-community/slider';
 import * as PortalPrimitive from '@rn-primitives/portal';
 import { useAudioPlayerStatus } from "expo-audio";
 import React, { useEffect, useRef, useState } from "react";
-import { Dimensions, Image, Modal, Pressable, Text, TouchableOpacity, useWindowDimensions, View } from "react-native";
+import { Dimensions, Image, Modal, Platform, Pressable, Text, TouchableOpacity, useWindowDimensions, View } from "react-native";
 import Animated, {
   runOnJS,
   useAnimatedStyle,
@@ -245,8 +245,8 @@ export default function Player() {
             player.seekTo(value);
           }}
           minimumTrackTintColor="#dadadaff" 
-          maximumTrackTintColor="transparent"
-          thumbTintColor="transparent"
+          maximumTrackTintColor={Platform.OS !== "web" ? "#555" : "transparent"}
+          thumbTintColor={Platform.OS !== "web" ? "#555" : "transparent"}
         />
       </View>
       {/* THUMBNAIL */}
