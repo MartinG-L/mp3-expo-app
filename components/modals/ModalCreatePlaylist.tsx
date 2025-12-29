@@ -94,7 +94,7 @@ export default function ModalCreatePlaylist({
       }
       const req = await axiosInstance.post("/api/albums/create", params)
       if(req.status == 200){
-          const newPlaylist = {
+        const newPlaylist = {
           id: req.data.id,
           name: req.data.name,
           description: req.data.description,
@@ -134,7 +134,6 @@ export default function ModalCreatePlaylist({
         albumId: playListData?.id
       }
       const req = await axiosInstance.put("/api/albums", params)
-      console.log(req.data);
       if(req.status == 200){
         const updatedData = req.data;
 

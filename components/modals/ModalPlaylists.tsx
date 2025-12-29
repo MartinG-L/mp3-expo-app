@@ -30,7 +30,6 @@ interface ModalPlaylistsProps {
   setLoadingSongsPLaylist: (loading: boolean) => void;
   LoadingSongsPLaylist: boolean;
   isDefault: boolean;
-  title: string
   onDeleted: () => void; 
   setIsEditing:  React.Dispatch<React.SetStateAction<boolean>>;
   setModalCreatePlaylistVisible: (visible: boolean) => void;
@@ -41,7 +40,6 @@ export default function ModalPlaylists({
   setModalPlaylistVisible,
   LoadingSongsPLaylist,
   isDefault,
-  title,
   onDeleted,
   setIsEditing,
   setModalCreatePlaylistVisible
@@ -92,7 +90,7 @@ export default function ModalPlaylists({
             }} style={{paddingVertical: 3, paddingHorizontal: 10}}>
               <MaterialIcons name="arrow-back" size={20} color="white" />
             </TouchableOpacity>
-            <Text style={styles.headerTitle}>{title}</Text>
+            <Text style={styles.headerTitle}>{playListData?.name}</Text>
           </View>
 
           {/* POPOVER OPTIONS */}

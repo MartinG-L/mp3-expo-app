@@ -91,7 +91,6 @@ export default function HomeScreen() {
     setLoadingSongsPlaylist(true);
     setModalPlaylistVisible(true);
     setIsDefault(playlist.isDefault);
-    setModalTitlePlaylist(playlist.name.toString());
     // Info para el modal crear
     settitlePlaylist(playlist.name.toString())
     setDescriptionPlaylist(playlist.description.toString());
@@ -183,7 +182,6 @@ export default function HomeScreen() {
           setLoadingSongsPLaylist={setLoadingSongsPlaylist}
           LoadingSongsPLaylist={loadingSongsPlaylist}
           isDefault={isDefault}
-          title={modalTitlePlaylist}
           onDeleted={() => {
             setModalPlaylistVisible(false);
             setplayListData(null);
@@ -201,7 +199,6 @@ export default function HomeScreen() {
           titlePlaylist={titlePlaylist}
           descriptionPlaylist={descriptionPlaylist}
           onSave={() => {
-            setModalPlaylistVisible(false);
           }}
           isEditingPlaylist={isEditing}
           playListData={playListData}
