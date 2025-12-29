@@ -3,6 +3,7 @@ import { useAudio } from "@/contexts/PlayerContext";
 import { MaterialIcons } from '@expo/vector-icons';
 import Slider from '@react-native-community/slider';
 import * as PortalPrimitive from '@rn-primitives/portal';
+import { useAudioPlayerStatus } from "expo-audio";
 import React, { useEffect, useRef, useState } from "react";
 import { Dimensions, Image, Modal, Pressable, Text, TouchableOpacity, useWindowDimensions, View } from "react-native";
 import Animated, {
@@ -18,7 +19,6 @@ import ModalSelectAlbum from "../modals/ModalSelectAlbum";
 export default function Player() {
   const { 
     currentSongData,
-    status,
     player,
     togglePlayPause,
     Thumbnail,
@@ -46,6 +46,9 @@ export default function Player() {
   const fullScreenY = useSharedValue(1000);
   const [shouldRender, setShouldRender] = useState(false);
   const OFFSCREEN_Y = height + 100;
+
+  const status = useAudioPlayerStatus(player);
+  
 
   const handleSaveInAlbum = async (playlistsId: number[]) => {
     if (!currentSongData?.videoId) return;
@@ -108,9 +111,6 @@ export default function Player() {
     transform: [{ translateY: fullScreenY.value }],
   }));
 
-  // Usamos useEffect para que no nos spamee el thumbnail, 
-  // Nos aseguramos de que solo se imprima cuando realmente cambie el thumbnail
-  // Esto pasa porque en nuestro context el status se va actualizando cada segundo
   useEffect(() => {
     if (isFullScreen) {
       setShouldRender(true);
@@ -122,10 +122,16 @@ export default function Player() {
         }
       });
     }
+  }, [isFullScreen]);
+
+  // Usamos useEffect para que no nos spamee el thumbnail, 
+  // Nos aseguramos de que solo se imprima cuando realmente cambie el thumbnail
+  // Esto pasa porque en nuestro context el status se va actualizando cada segundo
+  useEffect(() => {
     modalVolumeVisble && measureVolumeBtn();
     setnewThumbnail(Thumbnail);
     setUpdateCurrentSong(currentSongData?.title ?? "");
-  }, [Thumbnail, currentSongData, width, height, player.volume, Volume, isFullScreen]);
+  }, [Thumbnail, currentSongData, width, height, player.volume, Volume]);
   // Protegimos que player exista
   if (!player) return null;
   // Formatear tiempo mm:ss

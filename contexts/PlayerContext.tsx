@@ -1,12 +1,11 @@
 // AudioContext.tsx
 import axiosInstance from "@/app/utils/axiosInstance";
-import { AudioPlayer, setAudioModeAsync, useAudioPlayer, useAudioPlayerStatus } from "expo-audio";
+import { AudioPlayer, setAudioModeAsync, useAudioPlayer } from "expo-audio";
 import React, { createContext, useContext, useEffect, useRef, useState } from "react";
 import { useAuth } from "./AuthContext";
 
 type AudioContextType = {
   player: AudioPlayer;
-  status: ReturnType<typeof useAudioPlayerStatus>;
   queueAndPlay: (queue: SongData[],  index: number) => void;
   next: () => void;
   prev: () => void;
@@ -50,8 +49,8 @@ interface PlaylistsUser {
 const AudioContext = createContext<AudioContextType | undefined>(undefined);
 
 export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  console.log("🎧 AudioProvider render");
   const player = useAudioPlayer();
-  const status = useAudioPlayerStatus(player);
   const [audioReady, setAudioReady] = useState(false);
   const [Thumbnail, setThumbnail] = useState<string | null>(null);
   const {token, userId} = useAuth();
@@ -89,12 +88,12 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, [currentIndex, queue]);
 
 
-  useEffect(() => {
-    if (status.didJustFinish) {
-      player.seekTo(0);
-      player.pause();
-    }
-  }, [status.didJustFinish]);
+  // useEffect(() => {
+  //   if (status.didJustFinish) {
+  //     player.seekTo(0);
+  //     player.pause();
+  //   }
+  // }, [status.didJustFinish]);
 
   const next = async () => {
     console.log("Next song");
@@ -265,7 +264,6 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   return (
     <AudioContext.Provider value={{
       player,
-      status,
       queueAndPlay,
       next,
       prev,

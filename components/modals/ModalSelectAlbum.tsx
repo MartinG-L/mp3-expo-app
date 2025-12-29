@@ -116,6 +116,7 @@ const styles = StyleSheet.create({
   },
   container: {
     width: '80%',
+    maxWidth: 400,
     backgroundColor: '#1a1a1a',
     borderRadius: 15,
   },
