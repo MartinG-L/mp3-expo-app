@@ -90,7 +90,7 @@ export default function HomeScreen() {
   async function handlePlaylistModal(playlist: any) {
     setLoadingSongsPlaylist(true);
     setModalPlaylistVisible(true);
-    setIsDefault(playlist.isDefault);
+    setIsDefault(playlist.is_default);
     // Info para el modal crear
     settitlePlaylist(playlist.name.toString())
     setDescriptionPlaylist(playlist.description.toString());

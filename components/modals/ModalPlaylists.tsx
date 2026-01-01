@@ -3,8 +3,11 @@ import { useAudio } from '@/contexts/PlayerContext';
 import { MaterialIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as PopoverPrimitive from '@rn-primitives/popover';
+import { useState } from "react";
 import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { PopoverContent, PopoverTrigger } from '../ui/popover';
+import ModalConfirmDelete from './ModalConfirmDelete';
+
 
 interface Song {
   id: number;
@@ -45,14 +48,14 @@ export default function ModalPlaylists({
   setModalCreatePlaylistVisible
 }: ModalPlaylistsProps){
     const {queueAndPlay, setListUserPlaylist} = useAudio();
+    const [showConfirmDelete, setshowConfirmDelete] = useState(false);
 
-
-    const deletePlaylist = async ()=>{
+    const deletePlaylist = async (playlistId: number)=>{
       if(playListData?.is_default) return;
       try {
-        await axiosInstance.delete(`/api/albums/${playListData?.id}`)
+        await axiosInstance.delete(`/api/albums/${playlistId}`)
         setListUserPlaylist(prev => {
-          const updated = prev.filter(p => p.id !== playListData?.id);
+          const updated = prev.filter(p => p.id !== playlistId);
 
           AsyncStorage.setItem(
             "listUserPlaylist",
@@ -80,6 +83,12 @@ export default function ModalPlaylists({
         flex: 1
       }}>
 
+        {/* Confirmar Borrado */}
+        <ModalConfirmDelete 
+          visible={showConfirmDelete} 
+          onClose={() => setshowConfirmDelete(false)} 
+          OnConfirm={()=> {if(playListData?.id){deletePlaylist(playListData?.id)}}}
+        />
         {/* Header con flecha */}
         <View style={styles.header}>
     
@@ -145,7 +154,7 @@ export default function ModalPlaylists({
                     display:"flex",
                     flexDirection: "row",
                     justifyContent: "space-around"
-                  }} onPress={deletePlaylist}>
+                  }} onPress={()=>setshowConfirmDelete(true)}>
                     <Text style={{color:"white", fontWeight:"light", fontSize: 12}}>Eliminar</Text>
                     <MaterialIcons name="delete" size={18} color="#a83737ff" />
                   </TouchableOpacity>

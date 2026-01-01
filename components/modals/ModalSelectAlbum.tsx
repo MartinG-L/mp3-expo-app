@@ -1,7 +1,7 @@
 import { useAudio } from '@/contexts/PlayerContext';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
-import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Modal, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 interface Props {
     visible: boolean;
@@ -60,8 +60,8 @@ export default function SelectAlbumModal({ visible, onClose, onSelect }: Props) 
       animationType="fade"
       onRequestClose={onClose}
     >
-      <View style={styles.overlay}>
-        <View style={styles.container}>
+      <Pressable style={styles.overlay} onPress={onClose}>
+          <Pressable style={styles.container} onPress={() => {}}>
           <Text style={styles.title}>TUS PLAYLIST</Text>
 
           {listUserPlaylist.map(album => (
@@ -92,20 +92,20 @@ export default function SelectAlbumModal({ visible, onClose, onSelect }: Props) 
 
             <TouchableOpacity
               onPress={handleConfirm}
-              disabled={selectedPlaylist === null || !isDisabled}
+              disabled={selectedPlaylist === null || isDisabled}
             >
               <Text
                 style={[
                   styles.confirm,
-                  (selectedPlaylist === null || !isDisabled) && { opacity: 0.5 },
+                  (selectedPlaylist === null || isDisabled) && { opacity: 0.5 },
                 ]}
               >
                 GUARDAR
               </Text>
             </TouchableOpacity>
           </View>
-        </View>
-      </View>
+        </Pressable>
+      </Pressable>
     </Modal>
   );
 }
@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
     borderRadius: 15,
   },
   title: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '600',
     color: '#fff',
     textAlign: 'center',
@@ -137,7 +137,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 15,
+    marginBottom: 10,
   },
   radioOuter: {
     width: 20,
@@ -147,17 +147,18 @@ const styles = StyleSheet.create({
     borderColor: '#bbb',
   },
   radioText: {
-    color: '#bbb',
-    fontSize: 16,
+    color: 'white',
+    fontSize: 15,
   },
   actions: {
     flexDirection: 'row',
     justifyContent: 'center',
     borderTopColor: '#444',
     borderTopWidth: 1,
+    marginTop: 10
   },
   cancel: {
-    color: '#FFD700',
+    color: 'gray',
     fontWeight: '600',
     marginRight: 20,
     fontSize: 13,
