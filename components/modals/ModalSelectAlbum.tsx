@@ -79,7 +79,7 @@ export default function SelectAlbumModal({ visible, onClose, onSelect }: Props) 
                 {selectedPlaylist.has(album.id) ? (
                   <MaterialIcons  name="check-circle" size={23} color="#FFD700" />
                 ) : (
-                  <View style={styles.radioOuter}/>
+                  <MaterialIcons  name="radio-button-unchecked" size={23} color="#bbb" />
                 )}
               </View>
             </TouchableOpacity>
@@ -138,13 +138,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 10,
-  },
-  radioOuter: {
-    width: 20,
-    height: 20,
-    borderRadius: 11,
-    borderWidth: 1,
-    borderColor: '#bbb',
   },
   radioText: {
     color: 'white',
