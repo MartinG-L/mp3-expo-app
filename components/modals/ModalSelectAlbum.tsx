@@ -164,7 +164,7 @@ const styles = StyleSheet.create({
     color: 'black',
     fontSize: 12,
     fontWeight: '600',
-    paddingVertical: 7,
+    paddingVertical: 9,
     marginTop: 8,
     borderRadius: 10,
     paddingHorizontal: 20,
