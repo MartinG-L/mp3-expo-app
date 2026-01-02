@@ -246,7 +246,7 @@ export default function ModalCreatePlaylist({
               <Text style={{ color: "white", fontSize: 14, fontWeight: "bold" }}>
                 {isEditingPlaylist ? "EDITAR PLAYLIST" :  "NUEVA PLAYLIST"}
               </Text>
-              <TouchableOpacity style={{padding: 5}} onPress={() => setModalCreatePlaylistVisible(false)}>
+              <TouchableOpacity style={{padding: 5}} onPress={close}>
                 <MaterialIcons size={17} name="close" color="white" />
               </TouchableOpacity>
             </View>
