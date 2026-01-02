@@ -66,7 +66,7 @@ const styles = StyleSheet.create({
   },
   description: {
     color: '#bbb',
-    fontSize: 15,
+    fontSize: 14,
   },
   actions: {
     flexDirection: 'row',
@@ -79,7 +79,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
     fontSize: 12,
     paddingHorizontal: 10,
-    paddingVertical: 8,
+    paddingVertical: 9,
   },
   confirm: {
     backgroundColor: 'red',
@@ -87,7 +87,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     borderRadius: 10,
-    paddingVertical: 8,
+    paddingVertical: 9,
     paddingHorizontal: 15,
   },
 });

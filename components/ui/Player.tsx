@@ -124,6 +124,13 @@ export default function Player() {
     }
   }, [isFullScreen]);
 
+  useEffect(() => {
+    if(status.didJustFinish){
+      player.seekTo(0);
+      player.pause();
+    }
+  }, [status.didJustFinish]);
+
   // Usamos useEffect para que no nos spamee el thumbnail, 
   // Nos aseguramos de que solo se imprima cuando realmente cambie el thumbnail
   // Esto pasa porque en nuestro context el status se va actualizando cada segundo

@@ -118,20 +118,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   container: {
-    width: '90%',
+    width: '80%',
     maxWidth: 350,
     backgroundColor: '#1a1a1a',
     borderRadius: 15,
   },
   title: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '600',
     color: '#fff',
     textAlign: 'center',
     borderBottomColor: '#444',
     borderBottomWidth: 1,
-    paddingVertical: 15,
-    marginBottom: 15,
+    paddingVertical: 13,
+    marginBottom: 10,
   },
   radioRow: {
     paddingHorizontal: 15,
@@ -149,15 +149,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderTopColor: '#444',
     borderTopWidth: 1,
-    marginTop: 10
+    paddingVertical: 7
   },
   cancel: {
     color: 'gray',
     fontWeight: '600',
-    marginRight: 20,
     fontSize: 12,
-    paddingVertical: 16,
-    paddingHorizontal: 20,
+    paddingVertical: 9,
+    paddingHorizontal: 15,
   },
   confirm: {
     backgroundColor: '#FFD700',
@@ -165,8 +164,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     paddingVertical: 9,
-    marginTop: 8,
     borderRadius: 10,
-    paddingHorizontal: 20,
+    paddingHorizontal: 15,
   },
 });
