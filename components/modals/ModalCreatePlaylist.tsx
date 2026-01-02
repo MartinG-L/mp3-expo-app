@@ -225,12 +225,12 @@ export default function ModalCreatePlaylist({
             style={[
             {
               alignSelf: "center",
-              backgroundColor: "#121212",
+              backgroundColor: "#1a1a1a",
               paddingVertical: 15,
-              paddingHorizontal: 20,
+              paddingHorizontal: 15,
               borderRadius: 10,
               borderWidth: 1,
-              borderColor: "#333",
+              borderColor: "#222",
               minWidth: 300,
             }, modalAnimation
             ]}
@@ -243,16 +243,16 @@ export default function ModalCreatePlaylist({
                 alignItems: "center",
               }}
             >
-              <Text style={{ color: "white", fontSize: 17, fontWeight: "bold" }}>
-                {isEditingPlaylist ? "Editar Playlist" :  "Nueva Playlist!"}
+              <Text style={{ color: "white", fontSize: 14, fontWeight: "bold" }}>
+                {isEditingPlaylist ? "EDITAR PLAYLIST" :  "NUEVA PLAYLIST"}
               </Text>
               <TouchableOpacity style={{padding: 5}} onPress={() => setModalCreatePlaylistVisible(false)}>
-                <MaterialIcons size={20} name="close" color="white" />
+                <MaterialIcons size={17} name="close" color="white" />
               </TouchableOpacity>
             </View>
 
             {/* Inputs */}
-            <View style={{ marginTop: 15 }}>
+            <View style={{ marginTop: 10 }}>
               <TextInput
                 placeholder="Titulo"
                 placeholderTextColor="rgba(255, 255, 255, 0.3)"
@@ -262,7 +262,7 @@ export default function ModalCreatePlaylist({
                   color: "white",
                   borderWidth: 1,
                   borderColor: "#777",
-                  borderRadius: 3,
+                  borderRadius: 5,
                   fontSize: 13
                 }}
                 value={titlePlaylist}
@@ -279,7 +279,7 @@ export default function ModalCreatePlaylist({
                   color: "white",
                   borderWidth: 1,
                   borderColor: "#777",
-                  borderRadius: 3,
+                  borderRadius: 5,
                   fontSize: 13
                 }}
                 value={descriptionPlaylist}
@@ -292,33 +292,33 @@ export default function ModalCreatePlaylist({
               style={{
                 marginTop: 15,
                 flexDirection: "row",
-                justifyContent: "flex-end",
+                justifyContent: "space-between",
               }}
             >
               <Pressable
                 style={{
-                  backgroundColor: "#3b3b3bff",
+                  backgroundColor: "#333",
                   maxWidth: 100,
                   paddingVertical: 7,
                   paddingHorizontal: 15,
                   alignItems: "center",
-                  borderRadius: 3,
+                  borderRadius: 5,
                   marginRight: 10,
                 }}
                 onPress={close}
               >
-                <Text style={{ color: "white" }}>Cancelar</Text>
+                <Text style={{ color: "gray", fontWeight: "bold", fontSize: 13 }}>Cancelar</Text>
               </Pressable>
 
               <Pressable
                 style={({ pressed }) => [
                   {
-                    backgroundColor: pressed ? "#dfdfdfff" : "white",
+                    backgroundColor: "#FFD700",
                     maxWidth: 100,
                     paddingVertical: 7,
-                    paddingHorizontal: 15,
+                    paddingHorizontal: 20,
                     alignItems: "center",
-                    borderRadius: 3,
+                    borderRadius: 5,
                     opacity: IsDisabled ? 0.5 : 1,
                   },
                 ]}
@@ -327,7 +327,7 @@ export default function ModalCreatePlaylist({
                 {isLoading ? (
                   <ActivityIndicator color="#333" />
                 ) : (
-                  <Text style={{ color: "black" }}>
+                  <Text style={{ color: "black", fontWeight: "bold", fontSize: 13 }}>
                     {isEditingPlaylist ? "Guardar" : "Crear"}
                   </Text>
                 )}

@@ -13,7 +13,7 @@ interface Props {
 export default function SelectAlbumModal({ visible, onClose, onSelect }: Props) {
   const [selectedPlaylist, setSelectedPlaylist] = useState<Set<number>>(new Set());
   const [initialPlaylist, setInitialPlaylist] = useState<Set<number>>(new Set());
-  const { listUserPlaylist, currentSongData } = useAudio();
+  const { listUserPlaylist, currentSongData, tabBarHeight, PlayerHeight } = useAudio();
   
   const isDisabled =
   selectedPlaylist.size === initialPlaylist.size &&
@@ -62,7 +62,7 @@ export default function SelectAlbumModal({ visible, onClose, onSelect }: Props) 
       onRequestClose={onClose}
     >
       <Pressable style={styles.overlay} onPress={onClose}>
-          <Pressable style={styles.container} onPress={() => {}}>
+          <Pressable style={[styles.container, {marginBottom: tabBarHeight + PlayerHeight}]} onPress={() => {}}>
           <Text style={styles.title}>TUS PLAYLIST</Text>
 
           {listUserPlaylist.map(album => (
@@ -88,7 +88,7 @@ export default function SelectAlbumModal({ visible, onClose, onSelect }: Props) 
 
           <View style={styles.actions}>
             <TouchableOpacity onPress={onClose}>
-              <Text style={styles.cancel}>CANCELAR</Text>
+              <Text style={styles.cancel}>Cancelar</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -101,7 +101,7 @@ export default function SelectAlbumModal({ visible, onClose, onSelect }: Props) 
                   (selectedPlaylist === null || isDisabled) && { opacity: 0.5 },
                 ]}
               >
-                GUARDAR
+                Guardar
               </Text>
             </TouchableOpacity>
           </View>
@@ -118,7 +118,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   container: {
-    width: '80%',
+    width: '90%',
     maxWidth: 350,
     backgroundColor: '#1a1a1a',
     borderRadius: 15,
@@ -156,8 +156,8 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginRight: 20,
     fontSize: 12,
-    paddingVertical: 15,
-    paddingHorizontal: 10,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
   },
   confirm: {
     backgroundColor: '#FFD700',
@@ -167,6 +167,6 @@ const styles = StyleSheet.create({
     paddingVertical: 7,
     marginTop: 8,
     borderRadius: 10,
-    paddingHorizontal: 10,
+    paddingHorizontal: 20,
   },
 });

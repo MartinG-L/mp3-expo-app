@@ -1,3 +1,4 @@
+import { useAudio } from '@/contexts/PlayerContext';
 import { Modal, Pressable, StyleSheet, View } from 'react-native';
 import { Text } from '../mytext';
 
@@ -8,6 +9,7 @@ interface Props {
 }
 
 export default function SelectAlbumModal({ visible, onClose, OnConfirm }: Props) {  
+  const { PlayerHeight, tabBarHeight} = useAudio();
 
   return (
     <Modal
@@ -17,7 +19,7 @@ export default function SelectAlbumModal({ visible, onClose, OnConfirm }: Props)
         onRequestClose={onClose}
     >
     <Pressable style={styles.overlay} onPress={onClose}>
-        <Pressable style={styles.container} onPress={() => {}}>
+        <Pressable style={[styles.container, {marginBottom: PlayerHeight + tabBarHeight}]} onPress={() => {}}>
         <Text style={styles.title}>
             ¿Estas seguro que deseas eliminar esta playlist?
         </Text>
