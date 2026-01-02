@@ -1,7 +1,8 @@
 import { useAudio } from '@/contexts/PlayerContext';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
-import { Modal, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Modal, Pressable, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Text } from '../mytext';
 
 interface Props {
     visible: boolean;
@@ -79,7 +80,7 @@ export default function SelectAlbumModal({ visible, onClose, onSelect }: Props) 
                 {selectedPlaylist.has(album.id) ? (
                   <MaterialIcons  name="check-circle" size={23} color="#FFD700" />
                 ) : (
-                  <MaterialIcons  name="radio-button-unchecked" size={23} color="#bbb" />
+                  <MaterialIcons  name="radio-button-unchecked" size={23} color="#666" />
                 )}
               </View>
             </TouchableOpacity>
