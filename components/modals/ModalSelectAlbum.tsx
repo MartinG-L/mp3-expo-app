@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
     borderRadius: 15,
   },
   title: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600',
     color: '#fff',
     textAlign: 'center',
@@ -148,7 +148,7 @@ const styles = StyleSheet.create({
   },
   radioText: {
     color: 'white',
-    fontSize: 15,
+    fontSize: 14,
   },
   actions: {
     flexDirection: 'row',
