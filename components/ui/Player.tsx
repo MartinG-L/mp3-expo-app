@@ -37,6 +37,7 @@ export default function Player() {
   const [Volume, setVolume] = useState(0.5);
   const [modalVolumeVisble, setModalVolumeVisble] = useState(false);
   const [modalSaveInAlbumVisible, setModalSaveInAlbumVisible] = useState(false);
+  const [stateRepeat, setstateRepeat] = useState(0);
 
   const volumeRef = useRef<View>(null);
   const [volumePos, setVolumePos] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
@@ -49,6 +50,14 @@ export default function Player() {
 
   const status = useAudioPlayerStatus(player);
   
+  const icons = [
+    {name: "repeat", color: "#dfdfdfff"}, // default next
+    {name: "repeat", color: "#FFD700"}, // repeat infinite
+    {name: "repeat-one", color: "#FFD700"}, // repeat one
+  ] as const;
+   const handleRepeat = () => {
+    setstateRepeat((prev) => (prev + 1) % icons.length);
+  };
 
   const handleSaveInAlbum = async (playlistsId: number[]) => {
     if (!currentSongData?.videoId) return;
@@ -112,6 +121,10 @@ export default function Player() {
   }));
 
   useEffect(() => {
+    player.volume = Volume;
+  }, [currentSongData]);
+
+  useEffect(() => {
     if (isFullScreen) {
       setShouldRender(true);
       fullScreenY.value = withTiming(0, { duration: 300 });
@@ -125,11 +138,22 @@ export default function Player() {
   }, [isFullScreen]);
 
   useEffect(() => {
-    if(status.didJustFinish){
+    if(!status.didJustFinish) return;
+    console.log("Ejecutando de nuevo");
+    const restart = () => {
       player.seekTo(0);
-      player.pause();
+      player.play();
     }
-  }, [status.didJustFinish]);
+
+    if(status.didJustFinish && stateRepeat === 0){
+      next();
+    } else if (status.didJustFinish && stateRepeat === 1) {
+      restart()
+    } else if (status.didJustFinish && stateRepeat === 2) {
+      restart();
+      setstateRepeat(0);
+    }
+  }, [status.didJustFinish, stateRepeat]);
 
   // Usamos useEffect para que no nos spamee el thumbnail, 
   // Nos aseguramos de que solo se imprima cuando realmente cambie el thumbnail
@@ -257,7 +281,7 @@ export default function Player() {
         />
       </View>
       {/* THUMBNAIL */}
-      <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 12, paddingBottom: 5}}>
+      <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 12, paddingBottom: 7}}>
         <TouchableOpacity onPress={()=>{
           setIsFullScreen(prev => !prev) 
         }}>
@@ -288,7 +312,7 @@ export default function Player() {
           >
             <MaterialIcons
               name={
-                Volume === 0 || Volume <= 0.03 
+                player.muted || Volume <= 0.01
                 ? "volume-off" 
                 : Volume < 0.5 
                 ? "volume-down" 
@@ -321,7 +345,7 @@ export default function Player() {
                   value={Volume}
                   onChange={(value) => {
                     setVolume(value);
-                    value <= 0.03 ? player.muted = true : player.muted = false
+                    value <= 0.01 ? player.muted = true : player.muted = false
                     player.volume = value;
                   }}
                 />
@@ -338,6 +362,12 @@ export default function Player() {
               onSelect={handleSaveInAlbum} 
             />
           </TouchableOpacity>
+
+          {/* Repeat */}
+          <TouchableOpacity style={{paddingVertical: 5}} onPress={handleRepeat}>
+            <MaterialIcons name={icons[stateRepeat].name} size={28} color={icons[stateRepeat].color} />
+          </TouchableOpacity >
+
           <View style={{height: 40, width: 2, backgroundColor: "#797979ff", marginHorizontal: 10}}>
           </View>
           <TouchableOpacity style={{paddingVertical: 5}} onPress={prev}>

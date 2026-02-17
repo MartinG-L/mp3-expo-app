@@ -2,7 +2,6 @@
 import axiosInstance from "@/app/utils/axiosInstance";
 import { AudioPlayer, setAudioModeAsync, useAudioPlayer } from "expo-audio";
 import React, { createContext, useContext, useEffect, useRef, useState } from "react";
-import { useAuth } from "./AuthContext";
 
 type AudioContextType = {
   player: AudioPlayer;
@@ -53,7 +52,6 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const player = useAudioPlayer();
   const [audioReady, setAudioReady] = useState(false);
   const [Thumbnail, setThumbnail] = useState<string | null>(null);
-  const {token, userId} = useAuth();
   const [Duration, setDuration] = useState(0);
   const [PlayerHeight, setPlayerHeight] = useState(0);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -88,12 +86,6 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, [currentIndex, queue]);
 
 
-  // useEffect(() => {
-  //   if (status.didJustFinish) {
-  //     player.seekTo(0);
-  //     player.pause();
-  //   }
-  // }, [status.didJustFinish]);
 
   const next = async () => {
     console.log("Next song");
@@ -282,7 +274,7 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       tabBarHeight,
       setListUserPlaylist,
       listUserPlaylist,
-      currentSongData
+      currentSongData,
     }}>
       {children}
     </AudioContext.Provider>

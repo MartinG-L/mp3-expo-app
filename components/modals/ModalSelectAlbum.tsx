@@ -119,9 +119,9 @@ const styles = StyleSheet.create({
   },
   container: {
     width: '80%',
-    maxWidth: 350,
+    maxWidth: 280,
     backgroundColor: '#1a1a1a',
-    borderRadius: 15,
+    borderRadius: 10,
   },
   title: {
     fontSize: 12,

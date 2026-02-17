@@ -47,7 +47,7 @@ export default function ModalPlaylists({
   setIsEditing,
   setModalCreatePlaylistVisible
 }: ModalPlaylistsProps){
-    const {queueAndPlay, setListUserPlaylist} = useAudio();
+    const {queueAndPlay, setListUserPlaylist, currentSongData} = useAudio();
     const [showConfirmDelete, setshowConfirmDelete] = useState(false);
 
     const deletePlaylist = async (playlistId: number)=>{
@@ -113,25 +113,26 @@ export default function ModalPlaylists({
             </PopoverTrigger>
             
             
-              <PopoverContent
+            <PopoverContent
               side="bottom"
-              sideOffset={8}
+              sideOffset={10}
               align="end"
-              alignOffset={-20}
+              alignOffset={15}
               style={{
-                backgroundColor: "#121212",
+                backgroundColor: "#111",
                 flexDirection: "column",
-                minWidth: 120,
                 overflow: "hidden", 
                 borderWidth: 1,
-                borderColor: "#222"
+                borderColor: "#222",
+                paddingHorizontal: 10,
+                borderRadius: 10
               }}>
                 {/* Botones */}
                 <PopoverPrimitive.Close asChild>
                   <TouchableOpacity 
                   style={{
-                    paddingVertical: 12,
-                    paddingHorizontal: 5,
+                    paddingVertical: 8,
+                    paddingHorizontal: 7,
                     display:"flex",
                     flexDirection: "row",
                     justifyContent: "space-around",
@@ -149,8 +150,8 @@ export default function ModalPlaylists({
                 <PopoverPrimitive.Close asChild>
                   <TouchableOpacity 
                   style={{
-                    paddingVertical: 12,
-                    paddingHorizontal: 5,
+                    paddingVertical: 8,
+                    paddingHorizontal: 7,
                     display:"flex",
                     flexDirection: "row",
                     justifyContent: "space-around"
@@ -174,7 +175,7 @@ export default function ModalPlaylists({
                 <ActivityIndicator style={{marginTop: 120}} size="large" color="#2fa0d4ff" />
             </View>
           ) : (
-          <View style={{ width: "100%" }}>
+          <View style={{ width: "100%"}}>
             {playListData?.songs.map((music, index) => (
               <TouchableOpacity
                 key={music.videoId}
@@ -191,13 +192,28 @@ export default function ModalPlaylists({
                     borderRadius: 5,
                     width: "100%",
                 }}
-              >   
+              > 
+              {currentSongData?.title === music.title && (
+                <View
+                  pointerEvents="none"
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    borderBottomWidth: 2,
+                    borderColor: "#FFD700",
+                    borderRadius: 2,
+                  }}
+                />  
+              )}
                 <Image 
                   source={{ uri: music.urlThumbnail }} 
                   style={{ width: 70, height: 60, borderRadius: 5, marginRight: 10 }} 
                 />
                 <View style={{flex: 1}}>
-                  <Text style={{color:'white'}}>{music.title}</Text>    
+                  <Text style={{color:"white"}}>{music.title}</Text>    
                 </View>
             </TouchableOpacity>
             ))}

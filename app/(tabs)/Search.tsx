@@ -119,7 +119,22 @@ export default function Search() {
                         backgroundColor: "#111",
                         borderRadius: 5,
                         }}
-                    >
+                    >         
+                        {currentSongData?.title === music.title && (
+                        <View
+                            pointerEvents="none"
+                            style={{
+                                position: "absolute",
+                                top: 0,
+                                left: 0,
+                                right: 0,
+                                bottom: 0,
+                                borderBottomWidth: 2,
+                                borderColor: "#FFD700",
+                                borderRadius: 2,
+                            }}
+                        />  
+                        )}
                         {!precise && (
                             <Image
                                 source={{ uri: music.urlThumbnail }}
