@@ -56,3 +56,28 @@
     --chart-5: 340 75% 55%;
   }
 }
+
+[data-sonner-toast][data-type="success"] {
+  background: #18181b !important;           
+  border: 1px solid #27272a !important;     
+  border-radius: 12px !important;
+  padding: 14px 16px !important;
+  color: #f4f4f5 !important;               
+  box-shadow: 0 1px 15px rgba(251, 255, 0, 0.15) !important;
+  backdrop-filter: blur(6px);
+}
+[data-sonner-toast][data-type="error"] {
+  background: #18181b !important;           
+  border: 1px solid #27272a !important;     
+  border-radius: 12px !important;
+  padding: 14px 16px !important;
+  color: #f4f4f5 !important;               
+  box-shadow: 0 1px 15px rgba(255, 0, 0, 0.15) !important;
+  backdrop-filter: blur(6px);
+}
+[data-sonner-toast][data-type="success"] svg {
+  color: #22c55e !important;
+}
+[data-sonner-toast][data-type="error"] svg {
+  color: #ef4444 !important;
+}

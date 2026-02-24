@@ -138,6 +138,7 @@ export default function ModalPlaylists({
                     justifyContent: "space-around",
                     borderBottomColor: "#333",
                     borderWidth: 1,
+                    alignItems: "center",
                   }} onPress={()=>{
                       setIsEditing(true);
                       setModalCreatePlaylistVisible(true);  
@@ -154,7 +155,8 @@ export default function ModalPlaylists({
                     paddingHorizontal: 7,
                     display:"flex",
                     flexDirection: "row",
-                    justifyContent: "space-around"
+                    justifyContent: "space-around",
+                    alignItems: "center",
                   }} onPress={()=>setshowConfirmDelete(true)}>
                     <Text style={{color:"white", fontWeight:"light", fontSize: 12}}>Eliminar</Text>
                     <MaterialIcons name="delete" size={18} color="#a83737ff" />

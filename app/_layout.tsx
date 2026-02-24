@@ -1,13 +1,17 @@
 import { DarkTheme, ThemeProvider } from '@react-navigation/native';
 import { router, Stack } from 'expo-router';
 import 'react-native-reanimated';
+import "../global.css";
 
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { AudioProvider } from '@/contexts/PlayerContext';
+import { Toaster } from "@/lib/sonner";
 import { PortalHost } from "@rn-primitives/portal";
 import { useEffect } from 'react';
 import { ActivityIndicator, View } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaView } from "react-native-safe-area-context";
+
 
 
 
@@ -17,6 +21,7 @@ export const unstable_settings = {
 
 export default function RootLayout() {
   return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
     <AuthProvider>
       <AudioProvider>
         <View style={{ flex: 1 }}>
@@ -32,6 +37,7 @@ export default function RootLayout() {
         </View>
       </AudioProvider>
     </AuthProvider>
+    </GestureHandlerRootView>
   );
 }
 
@@ -66,6 +72,10 @@ function RootLayoutNav() {
         </Stack>
       </View>
       <PortalHost />
+     <Toaster
+      position="top-center"
+    
+    />
     </ThemeProvider>
   );
 }

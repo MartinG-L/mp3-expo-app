@@ -24,6 +24,7 @@ type AudioContextType = {
   setListUserPlaylist: React.Dispatch<React.SetStateAction<PlaylistsUser[]>>;
   listUserPlaylist: PlaylistsUser[]
   currentSongData: SongData | null;
+  fetchingNewMediaUrl: boolean;
 };
 
 type SongData = {
@@ -63,6 +64,7 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [queue, setQueue] = useState<SongData[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [tabBarHeight, setTabBarHeight] = useState(0);
+  const [fetchingNewMediaUrl, setfetchingNewMediaUrl] = useState(false);
 
   useEffect(() => {
     const configureAudio = async () => {
@@ -109,6 +111,7 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     if (!audioReady) return;
     let finalSong = song;
     let mediaUrl = "";
+    setfetchingNewMediaUrl(true);
     try {
       if(!song.videoId){
         const searchSong = await axiosInstance.get("/api/audio/search?searchSong=" + encodeURIComponent(song.title) + "&fromSearchPrecise=true");
@@ -131,6 +134,8 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       player.play();
     } catch (error) {
       console.error("Error al obtener el streamUrl:", error);
+    } finally {
+      setfetchingNewMediaUrl(false);
     }
   };
 
@@ -275,6 +280,7 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setListUserPlaylist,
       listUserPlaylist,
       currentSongData,
+      fetchingNewMediaUrl
     }}>
       {children}
     </AudioContext.Provider>

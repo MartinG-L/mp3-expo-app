@@ -1,11 +1,12 @@
 import axiosInstance from "@/app/utils/axiosInstance";
 import { useAudio } from "@/contexts/PlayerContext";
+import { showError, showSuccess } from "@/lib/toast";
 import { MaterialIcons } from '@expo/vector-icons';
 import Slider from '@react-native-community/slider';
 import * as PortalPrimitive from '@rn-primitives/portal';
 import { useAudioPlayerStatus } from "expo-audio";
 import React, { useEffect, useRef, useState } from "react";
-import { Dimensions, Image, Modal, Platform, Pressable, Text, TouchableOpacity, useWindowDimensions, View } from "react-native";
+import { ActivityIndicator, Dimensions, Image, Modal, Platform, Pressable, Text, TouchableOpacity, useWindowDimensions, View } from "react-native";
 import Animated, {
   runOnJS,
   useAnimatedStyle,
@@ -29,7 +30,8 @@ export default function Player() {
     next,
     PlayerHeight,
     tabBarHeight,
-    setListUserPlaylist
+    setListUserPlaylist,
+    fetchingNewMediaUrl
   } = useAudio();
   let [newThumbnail, setnewThumbnail] = useState<string | null>(null);
   let [UpdateCurrentSong, setUpdateCurrentSong] = useState<string|null>(null);
@@ -78,6 +80,9 @@ export default function Player() {
 
     try {
       const req = await axiosInstance.post(`/api/albums/add/song`, payload);
+      if (req.status === 200) {
+        showSuccess("Cambios guardados correctamente");
+      }
       const savedSong = {
         id: req.data.id,         
         videoId: req.data.videoId,
@@ -111,8 +116,12 @@ export default function Player() {
           return playlist;
         })
       );
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      if (err.req?.status === 404) {
+        showError("La playlist no existe");
+      } else {
+        showError("No se pudo eliminar la playlist");
+      }
     }
   };
 
@@ -139,7 +148,6 @@ export default function Player() {
 
   useEffect(() => {
     if(!status.didJustFinish) return;
-    console.log("Ejecutando de nuevo");
     const restart = () => {
       player.seekTo(0);
       player.play();
@@ -153,7 +161,7 @@ export default function Player() {
       restart();
       setstateRepeat(0);
     }
-  }, [status.didJustFinish, stateRepeat]);
+  }, [status.didJustFinish]);
 
   // Usamos useEffect para que no nos spamee el thumbnail, 
   // Nos aseguramos de que solo se imprima cuando realmente cambie el thumbnail
@@ -259,11 +267,15 @@ export default function Player() {
       )}
       {/* Header Current song */}
       <View style={{
-        paddingVertical: 6,
+        paddingVertical: fetchingNewMediaUrl ? 4 : 6,
         width: "100%",
         flex: 1
       }}>
-        <Text style={{color:"white", fontWeight: "bold", fontSize: 15, textAlign: "center"}}>{currentSongData?.title}</Text>
+        {fetchingNewMediaUrl ? (
+          <ActivityIndicator size="small" color="#facc15" />
+        ) : (
+          <Text style={{color:"white", fontWeight: "bold", fontSize: 15, textAlign: "center"}}>{currentSongData?.title}</Text>
+        )}
       </View>
       {/* SLIDER */}
       <View style={{paddingVertical: 3, display:"flex", flexDirection:"row", alignItems: "center"}}>
