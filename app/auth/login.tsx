@@ -14,7 +14,7 @@ export default function Login() {
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
     const [isLoading, setIsLoading] = useState(false);
-    const {saveToken, saveUserId, isLoggingIn} = useAuth();
+    const {saveToken, saveUserId, isLoggingIn, saveRole} = useAuth();
     const {setLikedSongs, likedSongs, setListUserPlaylist, listUserPlaylist} = useAudio();
 
     const isDisabled = !username.trim() || !password.trim() || isLoading;
@@ -34,6 +34,15 @@ export default function Login() {
 
         const jwtToken = res.data.jwTtoken;
         const userId = res.data.userId;
+        const role = res.data.role;
+
+        if (role === "ROLE_ADMIN") {
+          saveToken(jwtToken);
+          saveUserId(userId);
+          saveRole(role);
+          router.replace("/admin/create-user");
+          return;
+        }
         
         if (!jwtToken) {
             setError("Error: no se recibio token del servidor");
@@ -42,6 +51,7 @@ export default function Login() {
 
         saveToken(jwtToken);
         saveUserId(userId);
+        saveRole(role);
 
 
         await AsyncStorage.removeItem("likedSongs"); 

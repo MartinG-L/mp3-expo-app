@@ -42,17 +42,19 @@ export default function RootLayout() {
 }
 
 function RootLayoutNav() {
-  const { loading, token, isLoggingIn } = useAuth();
+  const { loading, token, isLoggingIn, isAdmin } = useAuth();
   
   useEffect(() => {
     if (!loading && !isLoggingIn) {
       if (!token) {
         router.replace("/auth/login");
+      } else if (isAdmin) {
+        router.replace("/admin/create-user");
       } else {
         router.replace("/(tabs)");
       }
     }
-  }, [token, loading]);
+  }, [token, loading, isLoggingIn, isAdmin]);
 
   if (loading) {
     return (
@@ -65,11 +67,15 @@ function RootLayoutNav() {
   return (
     <ThemeProvider value={DarkTheme}>
       <View style={{ flex: 1 }}>
-        <Stack>
-          <Stack.Screen name="auth/login" options={{ headerShown: false }}/>
-          
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }}/>
-        </Stack>
+       <Stack screenOptions={{ headerShown: false }}>
+        
+        <Stack.Screen name="auth/login" />
+
+        <Stack.Screen name="admin/create-user" />
+    
+        <Stack.Screen name="(tabs)" />
+        
+       </Stack>
       </View>
       <PortalHost />
      <Toaster
@@ -79,3 +85,5 @@ function RootLayoutNav() {
     </ThemeProvider>
   );
 }
+
+
