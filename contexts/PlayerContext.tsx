@@ -2,6 +2,7 @@
 import axiosInstance from "@/app/utils/axiosInstance";
 import { AudioPlayer, setAudioModeAsync, useAudioPlayer } from "expo-audio";
 import React, { createContext, useContext, useEffect, useRef, useState } from "react";
+import { useAuth } from "./AuthContext";
 
 type AudioContextType = {
   player: AudioPlayer;
@@ -65,6 +66,11 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [currentIndex, setCurrentIndex] = useState(0);
   const [tabBarHeight, setTabBarHeight] = useState(0);
   const [fetchingNewMediaUrl, setfetchingNewMediaUrl] = useState(false);
+  const {token} = useAuth();
+
+  useEffect(() => {
+    player.remove();
+  }, [token]);
 
   useEffect(() => {
     const configureAudio = async () => {
