@@ -137,7 +137,7 @@ export default function ModalPlaylists({
                     flexDirection: "row",
                     justifyContent: "space-around",
                     borderBottomColor: "#333",
-                    borderWidth: 1,
+                    borderBottomWidth: 1,
                     alignItems: "center",
                   }} onPress={()=>{
                       setIsEditing(true);
