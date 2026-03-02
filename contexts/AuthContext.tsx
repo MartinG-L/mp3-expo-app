@@ -80,7 +80,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = async () => {
     setToken(null);
     setUserId(null);
+    setRole(null);
     await AsyncStorage.removeItem("token");
+    await AsyncStorage.removeItem("userId");
+    await AsyncStorage.removeItem("role");
   };
 
   return (
