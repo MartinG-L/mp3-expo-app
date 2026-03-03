@@ -183,160 +183,181 @@ export default function ModalCreatePlaylist({
   }, [isEditingPlaylist, modalVisible]);
 
 
- return (
+return (
   <>
-  {isMounted &&
-    (<Animated.View 
-      style={{
-        position: "absolute",
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        justifyContent: "center",
-        alignItems: "center",
-        zIndex: 999,
-      }}
-    >
-      {/* Fondo borroso */}
-      <TouchableWithoutFeedback onPress={close}>
-        <BlurView
-          intensity={100}
-          tint="dark"
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(0,0,0,0.3)'
-          }}
-        />
-      </TouchableWithoutFeedback>
-
-      {/* Modal principal */}
-      <KeyboardAvoidingView
-        style={{ justifyContent: "center", marginBottom: 150}}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        enabled={!isWeb}
+    {isMounted && (
+      <Animated.View
+        style={{
+          position: "absolute",
+          top: 0, left: 0, right: 0, bottom: 0,
+          justifyContent: "center",
+          alignItems: "center",
+          zIndex: 999,
+        }}
       >
-        <TouchableWithoutFeedback onPress={handleDismissKeyboard}>
-          <Animated.View
-            style={[
-            {
-              alignSelf: "center",
-              backgroundColor: "#1a1a1a",
-              paddingVertical: 15,
-              paddingHorizontal: 15,
-              borderRadius: 10,
-              borderWidth: 1,
-              borderColor: "#222",
-              minWidth: 300,
-            }, modalAnimation
-            ]}
-          >
-            {/* Header */}
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              <Text style={{ color: "white", fontSize: 14, fontWeight: "bold" }}>
-                {isEditingPlaylist ? "EDITAR PLAYLIST" :  "NUEVA PLAYLIST"}
-              </Text>
-              <TouchableOpacity style={{padding: 5}} onPress={close}>
-                <MaterialIcons size={17} name="close" color="white" />
-              </TouchableOpacity>
-            </View>
-
-            {/* Inputs */}
-            <View style={{ marginTop: 10 }}>
-              <TextInput
-                placeholder="Titulo"
-                placeholderTextColor="rgba(255, 255, 255, 0.3)"
-                style={{
-                  paddingVertical: 10,
-                  paddingHorizontal: 7,
-                  color: "white",
-                  borderWidth: 1,
-                  borderColor: "#777",
-                  borderRadius: 5,
-                  fontSize: 13
-                }}
-                value={titlePlaylist}
-                onChangeText={setTitlePlaylist}
-              />
-
-              <TextInput
-                placeholder="Descripcion (opcional)"
-                placeholderTextColor="rgba(255, 255, 255, 0.3)"
-                style={{
-                  marginTop: 10,
-                  paddingVertical: 10,
-                  paddingHorizontal: 7,
-                  color: "white",
-                  borderWidth: 1,
-                  borderColor: "#777",
-                  borderRadius: 5,
-                  fontSize: 13
-                }}
-                value={descriptionPlaylist}
-                onChangeText={setDescriptionPlaylist}
-              />
-            </View>
-
-            {/* Botones */}
-            <View
-              style={{
-                marginTop: 15,
-                flexDirection: "row",
-                justifyContent: "space-between",
-              }}
-            >
-              <Pressable
-                style={{
-                  backgroundColor: "#333",
-                  maxWidth: 100,
-                  paddingVertical: 7,
-                  paddingHorizontal: 15,
-                  alignItems: "center",
-                  borderRadius: 5,
-                  marginRight: 10,
-                }}
-                onPress={close}
-              >
-                <Text style={{ color: "gray", fontWeight: "bold", fontSize: 13 }}>Cancelar</Text>
-              </Pressable>
-
-              <Pressable
-                style={({ pressed }) => [
-                  {
-                    backgroundColor: "#FFD700",
-                    maxWidth: 100,
-                    paddingVertical: 7,
-                    paddingHorizontal: 20,
-                    alignItems: "center",
-                    borderRadius: 5,
-                    opacity: IsDisabled ? 0.5 : 1,
-                  },
-                ]}
-                onPress={isEditingPlaylist ? editPlaylist : createPlaylist}
-              >
-                {isLoading ? (
-                  <ActivityIndicator color="#333" />
-                ) : (
-                  <Text style={{ color: "black", fontWeight: "bold", fontSize: 13 }}>
-                    {isEditingPlaylist ? "Guardar" : "Crear"}
-                  </Text>
-                )}
-              </Pressable>
-            </View>
-          </Animated.View>
+        {/* Fondo borroso */}
+        <TouchableWithoutFeedback onPress={close}>
+          <BlurView
+            intensity={100}
+            tint="dark"
+            style={{
+              position: "absolute",
+              top: 0, left: 0, right: 0, bottom: 0,
+              backgroundColor: "rgba(0,0,0,0.5)",
+            }}
+          />
         </TouchableWithoutFeedback>
-      </KeyboardAvoidingView>
-    </Animated.View>)}
+
+        {/* Modal principal */}
+        <KeyboardAvoidingView
+          style={{ justifyContent: "center", marginBottom: 150 }}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          enabled={!isWeb}
+        >
+          <TouchableWithoutFeedback onPress={handleDismissKeyboard}>
+            <Animated.View
+              style={[
+                {
+                  alignSelf: "center",
+                  backgroundColor: "#141414",
+                  borderRadius: 16,
+                  borderWidth: 1,
+                  borderColor: "#2a2a2a",
+                  minWidth: 300,
+                  overflow: "hidden",
+                },
+                modalAnimation,
+              ]}
+            >
+              {/* Header */}
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  paddingHorizontal: 18,
+                  paddingVertical: 14,
+                  borderBottomWidth: 1,
+                  borderBottomColor: "#222",
+                }}
+              >
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+                  <View
+                    style={{
+                      width: 3,
+                      height: 16,
+                      backgroundColor: "#FFD700",
+                      borderRadius: 2,
+                    }}
+                  />
+                  <Text style={{ color: "#fff", fontSize: 14, fontWeight: "700", letterSpacing: 0.3 }}>
+                    {isEditingPlaylist ? "Editar playlist" : "Nueva playlist"}
+                  </Text>
+                </View>
+                <TouchableOpacity
+                  onPress={close}
+                  style={{
+                    padding: 4,
+                    borderRadius: 6,
+                    backgroundColor: "#222",
+                  }}
+                >
+                  <MaterialIcons size={15} name="close" color="#888" />
+                </TouchableOpacity>
+              </View>
+
+              {/* Inputs */}
+              <View style={{ paddingHorizontal: 16, paddingTop: 14, gap: 10 }}>
+                <TextInput
+                  placeholder="Título"
+                  placeholderTextColor="#444"
+                  style={{
+                    paddingVertical: 10,
+                    paddingHorizontal: 12,
+                    color: "#fff",
+                    borderWidth: 1,
+                    borderColor: "#2a2a2a",
+                    borderRadius: 10,
+                    fontSize: 13,
+                    backgroundColor: "#1e1e1e",
+                  }}
+                  value={titlePlaylist}
+                  onChangeText={setTitlePlaylist}
+                />
+
+                <TextInput
+                  placeholder="Descripción (opcional)"
+                  placeholderTextColor="#444"
+                  style={{
+                    paddingVertical: 10,
+                    paddingHorizontal: 12,
+                    color: "#fff",
+                    borderWidth: 1,
+                    borderColor: "#2a2a2a",
+                    borderRadius: 10,
+                    fontSize: 13,
+                    backgroundColor: "#1e1e1e",
+                  }}
+                  value={descriptionPlaylist}
+                  onChangeText={setDescriptionPlaylist}
+                />
+              </View>
+
+              {/* Botones */}
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  gap: 8,
+                  paddingHorizontal: 14,
+                  paddingVertical: 14,
+                  borderTopWidth: 1,
+                  borderTopColor: "#222",
+                  marginTop: 14,
+                }}
+              >
+                <Pressable
+                  onPress={close}
+                  style={{
+                    paddingVertical: 8,
+                    paddingHorizontal: 14,
+                    borderRadius: 8,
+                    borderWidth: 1,
+                    borderColor: "#2e2e2e",
+                  }}
+                >
+                  <Text style={{ color: "#666", fontSize: 13, fontWeight: "600" }}>
+                    Cancelar
+                  </Text>
+                </Pressable>
+
+                <Pressable
+                  onPress={isEditingPlaylist ? editPlaylist : createPlaylist}
+                  disabled={IsDisabled}
+                  style={{
+                    paddingVertical: 8,
+                    paddingHorizontal: 18,
+                    borderRadius: 8,
+                    backgroundColor: "#FFD700",
+                    opacity: IsDisabled ? 0.35 : 1,
+                    minWidth: 70,
+                    alignItems: "center",
+                  }}
+                >
+                  {isLoading ? (
+                    <ActivityIndicator color="#000" size="small" />
+                  ) : (
+                    <Text style={{ color: "#000", fontWeight: "700", fontSize: 13 }}>
+                      Guardar
+                    </Text>
+                  )}
+                </Pressable>
+              </View>
+            </Animated.View>
+          </TouchableWithoutFeedback>
+        </KeyboardAvoidingView>
+      </Animated.View>
+    )}
   </>
- )
-}
+)};
