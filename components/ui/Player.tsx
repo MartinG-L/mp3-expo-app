@@ -40,6 +40,7 @@ export default function Player() {
   const [modalVolumeVisble, setModalVolumeVisble] = useState(false);
   const [modalSaveInAlbumVisible, setModalSaveInAlbumVisible] = useState(false);
   const [stateRepeat, setstateRepeat] = useState(0);
+  const thumbSize = Math.min(screenWidth * 0.52, 280);
 
   const volumeRef = useRef<View>(null);
   const [volumePos, setVolumePos] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
@@ -130,10 +131,6 @@ export default function Player() {
   }));
 
   useEffect(() => {
-    player.volume = Volume;
-  }, [currentSongData]);
-
-  useEffect(() => {
     if (isFullScreen) {
       setShouldRender(true);
       fullScreenY.value = withTiming(0, { duration: 300 });
@@ -167,10 +164,15 @@ export default function Player() {
   // Nos aseguramos de que solo se imprima cuando realmente cambie el thumbnail
   // Esto pasa porque en nuestro context el status se va actualizando cada segundo
   useEffect(() => {
-    modalVolumeVisble && measureVolumeBtn();
     setnewThumbnail(Thumbnail);
     setUpdateCurrentSong(currentSongData?.title ?? "");
-  }, [Thumbnail, currentSongData, width, height, player.volume, Volume]);
+  }, [Thumbnail, currentSongData]);
+  useEffect(() => {
+    modalVolumeVisble && measureVolumeBtn();
+  }, [modalVolumeVisble, width, height]);
+  useEffect(() => {
+    player.volume = Volume;
+  }, [Volume]);
   // Protegimos que player exista
   if (!player) return null;
   // Formatear tiempo mm:ss
@@ -210,7 +212,7 @@ export default function Player() {
         setPlayerHeight(height);
       }}
       style={{display: currentSongData ? "flex" : "none", backgroundColor: "#121212", borderTopWidth: 2, borderTopColor: "#333", flex: 1}}>
-      {/* FullScreen */}
+      {/* PLayer fullscreen */}
       {shouldRender && (
       <PortalPrimitive.Portal name="root">
         <Animated.View
@@ -221,50 +223,166 @@ export default function Player() {
               top: 0,
               left: 0,
               right: 0,
-              bottom: tabBarHeight + insets.bottom + PlayerHeight,
-              backgroundColor: "black",
+              bottom: 0,
+              backgroundColor: "#0e0e0e",
               zIndex: 50,
-            }, fullScreenStyle
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "space-between",
+              paddingTop: insets.top + 12,
+              paddingBottom: 70,
+
+              ...(Platform.OS === "web" && {
+                marginHorizontal: "auto",
+                paddingHorizontal: 32,
+              }),
+              ...(Platform.OS !== "web" && {
+                paddingHorizontal: 5,
+              }),
+            },
+            fullScreenStyle,
           ]}
         >
-          {/* Boton cerrar */}
+          {/* boton cerrar */}
           <TouchableOpacity
             onPress={() => setIsFullScreen(false)}
-            style={{
-              position: "absolute",
-              top: 20,
-              alignSelf: "center",
-              zIndex: 10,
-              padding: 20,
-            }}
+            style={{ alignSelf: "center" }}
           >
-            <MaterialIcons
-              name="keyboard-arrow-down"
-              size={40}
-              color="#dfdfdfff"
-            />
+            <MaterialIcons name="keyboard-arrow-down" size={40} color="#444" />
           </TouchableOpacity>
 
-          {/* Thumbnail grande */}
-          <View
-            style={{
-              flex: 1,
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            <Image
-              resizeMode="contain"
-              source={newThumbnail ? { uri: newThumbnail } : undefined}
+          {/* Header */}
+          <View style={{
+            width: "100%",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 25,
+          }}>
+            {/* Thumbnail */}
+            <View
               style={{
-                flex: 1,
+                width: Platform.OS !== "web" ? thumbSize * 1.5 : thumbSize * 1.8,
+                height: thumbSize * 1.8,
+                borderRadius: 14,
+                overflow: "hidden",
+                ...(Platform.OS !== "android" && {
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 10 },
+                  shadowOpacity: 0.5,
+                  shadowRadius: 18,
+                }),
+              }}
+            >
+              <Image
+                resizeMode="cover"
+                source={newThumbnail ? { uri: newThumbnail } : undefined}
+                style={{ width: "100%", height: "100%" }}
+              />
+            </View>
+          </View>
+          
+          {/* Actions */}
+          <View style={{
+            width: "100%",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 40,
+            paddingHorizontal: 12,
+          }}>
+            {/* Slider progreso + time + current song */}
+            <View style={{ width: "100%" }}>
+              {/* title song */}
+              <View style={{ width: "100%", alignItems: "center", marginBottom: 6 }}>
+                <Text
+                  numberOfLines={1}
+                  style={{
+                    color: "#fff",
+                    fontSize: 17,
+                    fontWeight: "700",
+                    letterSpacing: 0.2,
+                    textAlign: "center",
+                  }}
+                >
+                  {currentSongData?.title}
+                </Text>
+              </View>
+              <Text style={{ color: "#444", fontSize: 16, letterSpacing: 0.5, textAlign: "center", marginBottom: 6 }}>
+                {formatTime(status.currentTime)} · {formatTime(Duration)}
+              </Text>
+              <Slider
+                style={{ width: "100%", height: 28 }}
+                minimumValue={0}
+                maximumValue={Duration}
+                value={status.currentTime}
+                onSlidingComplete={(value) => player.seekTo(value)}
+                minimumTrackTintColor="#FFD700"
+                maximumTrackTintColor="#2a2a2a"
+                thumbTintColor="#FFD700"
+              />
+            </View>
+          
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 20,
                 width: "100%",
               }}
-            />
+            >
+              <TouchableOpacity onPress={handleRepeat} style={{ padding: 8 }}>
+                <MaterialIcons name={icons[stateRepeat].name} size={26} color={icons[stateRepeat].color} />
+              </TouchableOpacity>
+
+              <TouchableOpacity onPress={prev} style={{ padding: 8 }}>
+                <MaterialIcons name="skip-previous" size={44} color="#dfdfdf" />
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={togglePlayPause}
+                style={{
+                  width: 72, height: 72, borderRadius: 36,
+                  backgroundColor: "#FFD700",
+                  alignItems: "center", justifyContent: "center",
+                  shadowColor: "#FFD700",
+                  shadowOffset: { width: 0, height: 0 },
+                  shadowOpacity: 0.4, shadowRadius: 14, elevation: 10,
+                }}
+              >
+                <MaterialIcons name={status?.playing ? "pause" : "play-arrow"} size={42} color="#000" />
+              </TouchableOpacity>
+
+              <TouchableOpacity onPress={() => next()} style={{ padding: 8 }}>
+                <MaterialIcons name="skip-next" size={44} color="#dfdfdf" />
+              </TouchableOpacity>
+
+              <TouchableOpacity onPress={() => setModalSaveInAlbumVisible(true)} style={{ padding: 8 }}>
+                <MaterialIcons name="add-box" size={26} color="#dfdfdf" />
+              </TouchableOpacity>
+
+              {/* Volumen */}
+              {/* <TouchableOpacity
+                ref={volumeRef}
+                onPress={openVolume}
+                style={{ padding: 8 }}
+              >
+                <MaterialIcons
+                  name={
+                    player.muted || Volume <= 0.01
+                      ? "volume-off"
+                      : Volume < 0.5
+                      ? "volume-down"
+                      : "volume-up"
+                  }
+                  size={26}
+                  color={modalVolumeVisble ? "#888" : "#dfdfdf"}
+                />
+              </TouchableOpacity> */}
+            </View>
           </View>
         </Animated.View>
       </PortalPrimitive.Portal>
-      )}
+    )}
       {/* Header Current song */}
       <View style={{
         paddingVertical: fetchingNewMediaUrl ? 4 : 6,
