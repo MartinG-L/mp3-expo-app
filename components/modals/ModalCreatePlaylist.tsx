@@ -56,16 +56,22 @@ export default function ModalCreatePlaylist({
   const {setListUserPlaylist, listUserPlaylist} = useAudio();
   const isWeb = Platform.OS === "web";
   const [isMounted, setisMounted] = useState(false);
-
+  const blurOpacity = useSharedValue(1);
   const opacity = useSharedValue(0);
   const scale = useSharedValue(0.7);
+
+  const blurStyle = useAnimatedStyle(() => ({
+    opacity: blurOpacity.value,
+  }));
 
   const open = () => {
     opacity.value = withTiming(1, { duration: 200 });
     scale.value = withTiming(1, { duration: 200 });
+    blurOpacity.value = withTiming(1, { duration: 200 });
   };
 
   const close = () => {
+    blurOpacity.value = withTiming(0, { duration: 150 });
     opacity.value = withTiming(0, { duration: 150 }, (finished) => {
       if (finished) {
         runOnJS(setisMounted)(false);
@@ -197,15 +203,25 @@ return (
       >
         {/* Fondo borroso */}
         <TouchableWithoutFeedback onPress={close}>
+        <Animated.View
+          style={[
+            {
+              position: "absolute",
+              top: 0, left: 0, right: 0, bottom: 0,
+              backgroundColor: "rgba(0,0,0,0.5)",
+            },
+            blurStyle,
+          ]}
+        >
           <BlurView
             intensity={100}
             tint="dark"
             style={{
               position: "absolute",
               top: 0, left: 0, right: 0, bottom: 0,
-              backgroundColor: "rgba(0,0,0,0.5)",
             }}
           />
+        </Animated.View>
         </TouchableWithoutFeedback>
 
         {/* Modal principal */}
