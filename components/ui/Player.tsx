@@ -348,8 +348,12 @@ export default function Player() {
                   shadowOffset: { width: 0, height: 0 },
                   shadowOpacity: 0.4, shadowRadius: 14, elevation: 10,
                 }}
-              >
-                <MaterialIcons name={status?.playing ? "pause" : "play-arrow"} size={42} color="#000" />
+              > 
+                {fetchingNewMediaUrl ? (
+                  <ActivityIndicator size="small" color="#000" />
+                ) : (
+                  <MaterialIcons name={status?.playing ? "pause" : "play-arrow"} size={42} color="#000" />
+                )}
               </TouchableOpacity>
 
               <TouchableOpacity onPress={() => next()} style={{ padding: 8 }}>
@@ -385,15 +389,11 @@ export default function Player() {
     )}
       {/* Header Current song */}
       <View style={{
-        paddingVertical: fetchingNewMediaUrl ? 4 : 6,
+        paddingVertical: 4,
         width: "100%",
         flex: 1
       }}>
-        {fetchingNewMediaUrl ? (
-          <ActivityIndicator size="small" color="#facc15" />
-        ) : (
           <Text style={{color:"white", fontWeight: "bold", fontSize: 15, textAlign: "center"}}>{currentSongData?.title}</Text>
-        )}
       </View>
       {/* SLIDER */}
       <View style={{paddingVertical: 3, display:"flex", flexDirection:"row", alignItems: "center"}}>
@@ -503,8 +503,15 @@ export default function Player() {
           <TouchableOpacity style={{paddingVertical: 5}} onPress={prev}>
             <MaterialIcons name="skip-previous" size={25} color="#dfdfdfff" />
           </TouchableOpacity >
-          <TouchableOpacity style={{padding: 5}} onPress={togglePlayPause}>
-            <MaterialIcons name={status?.playing ? "pause" : "play-arrow"} size={40} color="#dfdfdfff" />
+          <TouchableOpacity 
+            style={{ padding: 5, width: 40, minHeight: 40, alignItems: "center", justifyContent: "center" }} 
+            onPress={togglePlayPause}
+          >
+            {fetchingNewMediaUrl ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <MaterialIcons name={status?.playing ? "pause" : "play-arrow"} size={40} color="#dfdfdfff" />
+            )}
           </TouchableOpacity>
           <TouchableOpacity style={{paddingVertical: 5}} onPress={()=> next()}>
             <MaterialIcons name="skip-next" size={25} color="#dfdfdfff" />

@@ -78,10 +78,9 @@ function RootLayoutNav() {
        </Stack>
       </View>
       <PortalHost />
-     <Toaster
-      position="top-center"
-    
-    />
+      <View style={{ position: "absolute", top: 0, left: 0, right: 0, zIndex: 9999, pointerEvents: "none" }}>
+        <Toaster position="top-center" />
+      </View>
     </ThemeProvider>
   );
 }
