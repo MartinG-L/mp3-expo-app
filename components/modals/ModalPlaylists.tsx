@@ -125,7 +125,6 @@ export default function ModalPlaylists({
                 borderWidth: 1,
                 borderColor: "#222",
                 paddingHorizontal: 10,
-                borderRadius: 10
               }}>
                 {/* Botones */}
                 <PopoverPrimitive.Close asChild>
