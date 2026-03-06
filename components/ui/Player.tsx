@@ -52,6 +52,11 @@ export default function Player() {
   const OFFSCREEN_Y = height + 100;
 
   const status = useAudioPlayerStatus(player);
+
+  const isSmallPhone = width < 380;  
+  const isTablet = width >= 768;
+  const isWeb = Platform.OS === "web";
+  const isWebDesktop = isWeb && width >= 1024;
   
   const icons = [
     {name: "repeat", color: "#dfdfdfff"}, // default next
@@ -230,14 +235,15 @@ export default function Player() {
               alignItems: "center",
               justifyContent: "space-between",
               paddingTop: insets.top + 12,
-              paddingBottom: 70,
+              paddingBottom: isSmallPhone ? 35 : 60,
 
+              ...(Platform.OS === "web" && isSmallPhone && {
+                marginHorizontal: "auto",
+                paddingHorizontal: 5,
+              }),
               ...(Platform.OS === "web" && {
                 marginHorizontal: "auto",
-                paddingHorizontal: 32,
-              }),
-              ...(Platform.OS !== "web" && {
-                paddingHorizontal: 5,
+                paddingHorizontal: isWebDesktop ? 30 : 15,
               }),
             },
             fullScreenStyle,
@@ -261,8 +267,16 @@ export default function Player() {
             {/* Thumbnail */}
             <View
               style={{
-                width: Platform.OS !== "web" ? thumbSize * 1.5 : thumbSize * 1.8,
-                height: thumbSize * 1.8,
+                width: isSmallPhone 
+                ? thumbSize * 1.3 
+                : Platform.OS !== "web" 
+                ? thumbSize * 1.5 
+                : thumbSize * 1.8,
+                height: isSmallPhone 
+                ? thumbSize * 1.2 
+                : Platform.OS !== "web" 
+                ? thumbSize * 1.5 
+                : thumbSize * 1.8,
                 borderRadius: 14,
                 overflow: "hidden",
                 ...(Platform.OS !== "android" && {
@@ -286,8 +300,11 @@ export default function Player() {
             width: "100%",
             alignItems: "center",
             justifyContent: "center",
-            gap: 40,
-            paddingHorizontal: 12,
+            gap: isSmallPhone ? 15 : 40,
+            paddingHorizontal: isSmallPhone ? 0 : 32,
+            ...(!isWeb && {
+              paddingHorizontal: 5,
+            }),
           }}>
             {/* Slider progreso + time + current song */}
             <View style={{ width: "100%" }}>
@@ -297,7 +314,7 @@ export default function Player() {
                   numberOfLines={1}
                   style={{
                     color: "#fff",
-                    fontSize: 17,
+                    fontSize: isSmallPhone ? 14 : 18,
                     fontWeight: "700",
                     letterSpacing: 0.2,
                     textAlign: "center",
@@ -326,7 +343,7 @@ export default function Player() {
                 flexDirection: "row",
                 alignItems: "center",
                 justifyContent: "center",
-                gap: 20,
+                gap: isSmallPhone ? 5 : 20,
                 width: "100%",
               }}
             >
@@ -389,11 +406,13 @@ export default function Player() {
     )}
       {/* Header Current song */}
       <View style={{
-        paddingVertical: 4,
+        paddingVertical: 6,
         width: "100%",
-        flex: 1
+        flex: 1,
       }}>
-          <Text style={{color:"white", fontWeight: "bold", fontSize: 15, textAlign: "center"}}>{currentSongData?.title}</Text>
+          <TouchableOpacity onPress={()=>{setIsFullScreen(prev => !prev)}}>
+            <Text style={{color:"white", fontWeight: "bold", fontSize: 15, textAlign: "center"}}>{currentSongData?.title}</Text>
+          </TouchableOpacity>
       </View>
       {/* SLIDER */}
       <View style={{paddingVertical: 3, display:"flex", flexDirection:"row", alignItems: "center"}}>
