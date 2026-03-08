@@ -53,7 +53,7 @@ export default function Player() {
 
   const status = useAudioPlayerStatus(player);
 
-  const isSmallPhone = width < 380 || height < 600;  
+  const isSmallPhone = width < 380 || height < 700;  
   const isTablet = width >= 768;
   const isWeb = Platform.OS === "web";
   const isWebDesktop = isWeb && width >= 1024;
