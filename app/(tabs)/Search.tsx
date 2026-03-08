@@ -96,7 +96,7 @@ export default function Search() {
                     <ActivityIndicator
                         style={{ marginTop: 120 }}
                         size="large"
-                        color="#2fa0d4ff"
+                        color="#FFD700"
                     />
                 ) : (
                 <FlatList
