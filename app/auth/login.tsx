@@ -14,7 +14,7 @@ export default function Login() {
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
     const [isLoading, setIsLoading] = useState(false);
-    const {saveToken, saveUserId, isLoggingIn, saveRole} = useAuth();
+    const {saveToken, saveUserId, isLoggingIn, saveRole, saveUsername, verifiedUsername} = useAuth();
     const {setLikedSongs, likedSongs, setListUserPlaylist, listUserPlaylist} = useAudio();
 
     const isDisabled = !username.trim() || !password.trim() || isLoading;
@@ -52,6 +52,7 @@ export default function Login() {
         saveToken(jwtToken);
         saveUserId(userId);
         saveRole(role);
+        saveUsername(username);
 
 
         await AsyncStorage.removeItem("likedSongs"); 
@@ -129,7 +130,7 @@ export default function Login() {
               fontWeight: "bold",
             }}
           >
-            Bienvenido Martin!
+            Bienvenido {verifiedUsername}!
           </Text>
           <ActivityIndicator
             size="large"
@@ -142,7 +143,7 @@ export default function Login() {
 
 
     return (
-    <View style={{ padding: 20, width: "65%", margin: "auto" }}>
+    <View style={{ padding: 20, width: "65%", margin: "auto", maxWidth: 400 }}>
         <TextInput placeholder="Usuario" value={username} onChangeText={setUsername} 
         placeholderTextColor="rgba(255, 255, 255, 0.3)"
         style={{
