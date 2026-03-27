@@ -18,6 +18,14 @@ type AuthContextType = {
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 
+let logoutRef: (() => void) | null = null;
+
+export const setLogout = (fn: () => void) => {
+  logoutRef = fn;
+};
+
+export const getLogout = () => logoutRef;
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [token, setToken] = useState<string | null>(null);
   const [userId, setUserId] = useState<number | null>(null);
@@ -25,6 +33,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [verifiedUsername, setVerifiedUsername] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+
+ 
 
   useEffect(() => {
     AsyncStorage.getItem("token").then((t) => {
@@ -105,6 +115,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await AsyncStorage.removeItem("role");
     await AsyncStorage.removeItem("username");
   };
+
+  useEffect(() => {
+    setLogout(() => logout);
+  }, [logout]);
 
   return (
     <AuthContext.Provider value={{ token, setToken, loading, saveToken, logout, saveUserId, userId, isLoggingIn, saveRole, isAdmin, saveUsername, verifiedUsername }}>

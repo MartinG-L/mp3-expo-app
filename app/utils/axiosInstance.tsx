@@ -1,11 +1,9 @@
-import { useAuth } from '@/contexts/AuthContext';
+import { getLogout } from "@/contexts/AuthContext";
 import { showSessionExpired } from '@/lib/toast';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { router } from 'expo-router';
 
-
-const {logout} = useAuth();
 
 const axiosInstance = axios.create({
   baseURL: process.env.EXPO_PUBLIC_API_URL,
@@ -30,7 +28,8 @@ axiosInstance.interceptors.response.use(
   (response) => response, 
   async (error) => {
     if (error.response?.status === 401) {
-        logout();
+        const logout = getLogout();
+        logout && logout();
         router.replace("/auth/login");
         showSessionExpired("Sesión expirada. Por favor, inicia sesión nuevamente.");
         return Promise.resolve({ data: null, status: 401 });
