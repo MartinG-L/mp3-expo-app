@@ -21,6 +21,25 @@ export const showSuccess = (message: string) => {
   }
 };
 
+export const showSessionExpired = (message: string) => {
+  if (Platform.OS === "web") {
+    toast(message as any, {
+      className: "toast-session-expired",
+    } as any);
+  } else {
+    toast(message, {
+      style: {
+        backgroundColor: "#18181b",
+        borderWidth: 1,
+        borderColor: "#27272a",
+        borderRadius: 12,
+        padding: 14,
+        elevation: 5,
+      },
+    });
+  }
+};
+
 export const showError = (message: string) => {
   if (Platform.OS === "web") {
     toast.error(message as any, {

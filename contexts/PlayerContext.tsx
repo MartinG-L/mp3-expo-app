@@ -1,6 +1,8 @@
 // AudioContext.tsx
 import axiosInstance from "@/app/utils/axiosInstance";
+import { showSessionExpired } from "@/lib/toast";
 import { AudioPlayer, setAudioModeAsync, useAudioPlayer } from "expo-audio";
+import { router } from 'expo-router';
 import React, { createContext, useContext, useEffect, useRef, useState } from "react";
 import { useAuth } from "./AuthContext";
 
@@ -26,6 +28,7 @@ type AudioContextType = {
   listUserPlaylist: PlaylistsUser[]
   currentSongData: SongData | null;
   fetchingNewMediaUrl: boolean;
+  setfetchingNewMediaUrl: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 type SongData = {
@@ -66,7 +69,9 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [currentIndex, setCurrentIndex] = useState(0);
   const [tabBarHeight, setTabBarHeight] = useState(0);
   const [fetchingNewMediaUrl, setfetchingNewMediaUrl] = useState(false);
-  const {token} = useAuth();
+  const {token, logout} = useAuth();
+
+  const authToken = token ? token : "";
 
   useEffect(() => {
     player.remove();
@@ -119,6 +124,15 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     let mediaUrl = "";
     setfetchingNewMediaUrl(true);
     try {
+      const requestMediaUrl = `${process.env.EXPO_PUBLIC_API_URL}/api/audio/stream?videoId=${encodeURIComponent(finalSong.videoId)}&token=${encodeURIComponent(authToken)}`;
+      // Verificar si el token es valido antes de intentar reproducir la cancion
+      const check = await fetch(requestMediaUrl, { method: 'HEAD' });
+      if (check.status === 401) {
+        logout();
+        router.replace('/auth/login');
+        showSessionExpired("Sesión expirada. Por favor, inicia sesión nuevamente.");
+        return;
+      }
       if(!song.videoId){
         const searchSong = await axiosInstance.get("/api/audio/search?searchSong=" + encodeURIComponent(song.title) + "&fromSearchPrecise=true");
         finalSong = {
@@ -127,12 +141,8 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           duration: searchSong.data[0].duration,
           urlThumbnail: searchSong.data[0].urlThumbnail,
         };
-        const request = await axiosInstance.get(`/api/audio/newstream?videoId=${encodeURIComponent(finalSong.videoId)}`);
-        mediaUrl = request.data;
-      } else {
-        const request = await axiosInstance.get(`/api/audio/newstream?videoId=${encodeURIComponent(song.videoId)}`);
-        mediaUrl = request.data;
-      }
+      } 
+      mediaUrl = `${process.env.EXPO_PUBLIC_API_URL}/api/audio/stream?videoId=${encodeURIComponent(finalSong.videoId)}&token=${encodeURIComponent(authToken)}`;
       player.replace({ uri: mediaUrl });
       setCurrentSongData(finalSong);
       setThumbnail(finalSong.urlThumbnail);
@@ -140,9 +150,7 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       player.play();
     } catch (error) {
       console.error("Error al obtener el streamUrl:", error);
-    } finally {
-      setfetchingNewMediaUrl(false);
-    }
+    } 
   };
 
   // Creamos indentificador logico ya que en quequeAndPlay cuando usamos preciseSearch
@@ -286,7 +294,8 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setListUserPlaylist,
       listUserPlaylist,
       currentSongData,
-      fetchingNewMediaUrl
+      fetchingNewMediaUrl,
+      setfetchingNewMediaUrl
     }}>
       {children}
     </AudioContext.Provider>

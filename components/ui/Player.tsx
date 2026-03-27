@@ -25,13 +25,11 @@ export default function Player() {
     Thumbnail,
     Duration,
     setPlayerHeight,
-    isLiked,
     prev,
     next,
-    PlayerHeight,
-    tabBarHeight,
     setListUserPlaylist,
-    fetchingNewMediaUrl
+    fetchingNewMediaUrl,
+    setfetchingNewMediaUrl
   } = useAudio();
   let [newThumbnail, setnewThumbnail] = useState<string | null>(null);
   let [UpdateCurrentSong, setUpdateCurrentSong] = useState<string|null>(null);
@@ -41,6 +39,7 @@ export default function Player() {
   const [modalSaveInAlbumVisible, setModalSaveInAlbumVisible] = useState(false);
   const [stateRepeat, setstateRepeat] = useState(0);
   const thumbSize = Math.min(screenWidth * 0.52, 280);
+  const [leftWidth, setLeftWidth] = useState(0);
 
   const volumeRef = useRef<View>(null);
   const [volumePos, setVolumePos] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
@@ -149,6 +148,12 @@ export default function Player() {
   }, [isFullScreen]);
 
   useEffect(() => {
+    if(!isNaN(status.duration) && status.duration > 0) {
+      setfetchingNewMediaUrl(false);
+    }
+  }, [status.duration]);
+
+  useEffect(() => {
     if(!status.didJustFinish) return;
     const restart = () => {
       player.seekTo(0);
@@ -178,6 +183,11 @@ export default function Player() {
   useEffect(() => {
     player.volume = Volume;
   }, [Volume]);
+  useEffect(() => {
+    if (currentSongData) {
+      player.volume = Volume;
+    }
+  }, [currentSongData]);
   // Protegimos que player exista
   if (!player) return null;
   // Formatear tiempo mm:ss
@@ -431,19 +441,25 @@ export default function Player() {
       </View>
       {/* THUMBNAIL */}
       <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 12, paddingBottom: 7}}>
-        <TouchableOpacity onPress={()=>{
-          setIsFullScreen(prev => !prev) 
-        }}>
-          <Image 
-            source={newThumbnail ? { uri: newThumbnail } : undefined}
-            style={{ width: 60, height: 60, borderRadius: 3}} 
-          />
-        </TouchableOpacity>
-        {/* Segundos*/}
-        <View style={{marginLeft: 6}}>
-          <Text style={{ color: "#8f8f8fff", paddingRight: 10}}>{formatTime(status.currentTime)}</Text>
-          <Text style={{ color: "#8f8f8fff"}}>{formatTime(Duration)}</Text>
+        <View 
+          onLayout={(e) => setLeftWidth(e.nativeEvent.layout.width)}
+          style={{display: "flex", flexDirection: "row", alignItems: "center"}}
+        >
+          <TouchableOpacity onPress={()=>{
+            setIsFullScreen(prev => !prev) 
+          }}>
+            <Image 
+              source={newThumbnail ? { uri: newThumbnail } : undefined}
+              style={{ width: 60, height: 60, borderRadius: 3}} 
+            />
+          </TouchableOpacity>
+          {/* Segundos*/}
+          <View style={{marginLeft: 6}}>
+            <Text style={{ color: "#8f8f8fff", paddingRight: 10}}>{formatTime(status.currentTime)}</Text>
+            <Text style={{ color: "#8f8f8fff"}}>{formatTime(Duration)}</Text>
+          </View>
         </View>
+      
         {/* Actions */}
         <View style={{
             display: "flex",
@@ -535,6 +551,7 @@ export default function Player() {
           <TouchableOpacity style={{paddingVertical: 5}} onPress={()=> next()}>
             <MaterialIcons name="skip-next" size={25} color="#dfdfdfff" />
           </TouchableOpacity>
+          <View style={{ width: isSmallPhone ? 0 : leftWidth }} />
         </View>
         {/* Fin actions */}
       </View>
