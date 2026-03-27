@@ -4,7 +4,7 @@ import { useAudio } from "@/contexts/PlayerContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { ActivityIndicator, Pressable, StyleSheet, TextInput, View } from "react-native";
+import { ActivityIndicator, Platform, Pressable, StyleSheet, TextInput, View } from "react-native";
 import axiosInstance from "../utils/axiosInstance";
 
 
@@ -16,6 +16,9 @@ export default function Login() {
     const [isLoading, setIsLoading] = useState(false);
     const {saveToken, saveUserId, isLoggingIn, saveRole, saveUsername, verifiedUsername} = useAuth();
     const {setLikedSongs, likedSongs, setListUserPlaylist, listUserPlaylist} = useAudio();
+    const isWeb = Platform.OS === "web";
+    const capitalizar = (str: string | null) =>
+    str ? str[0].toUpperCase() + str.slice(1).toLowerCase() : "";
 
     const isDisabled = !username.trim() || !password.trim() || isLoading;
 
@@ -128,9 +131,10 @@ export default function Login() {
               color: "white",
               fontSize: 32,
               fontWeight: "bold",
+              textAlign: "center",
             }}
           >
-            Bienvenido {verifiedUsername}!
+            Bienvenid(a) { !isWeb ? `\n${capitalizar(verifiedUsername)}` : `${capitalizar(verifiedUsername)}`}!
           </Text>
           <ActivityIndicator
             size="large"
