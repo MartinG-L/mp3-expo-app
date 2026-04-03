@@ -6,6 +6,9 @@ import { router } from 'expo-router';
 import React, { createContext, useContext, useEffect, useRef, useState } from "react";
 import { useAuth } from "./AuthContext";
 
+import { NativeModules } from 'react-native';
+const { NewPipeModule } = NativeModules;
+
 type AudioContextType = {
   player: AudioPlayer;
   queueAndPlay: (queue: SongData[],  index: number) => void;
@@ -142,7 +145,7 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           urlThumbnail: searchSong.data[0].urlThumbnail,
         };
       } 
-      mediaUrl = `${process.env.EXPO_PUBLIC_API_URL}/api/audio/stream?videoId=${encodeURIComponent(finalSong.videoId)}&token=${encodeURIComponent(authToken)}`;
+      mediaUrl = await NewPipeModule.getAudioUrl(finalSong.videoId);
       player.replace({ uri: mediaUrl });
       setCurrentSongData(finalSong);
       setThumbnail(finalSong.urlThumbnail);
