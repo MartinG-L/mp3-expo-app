@@ -148,6 +148,7 @@ export default function Search() {
                     )}
                     initialNumToRender={8}
                     windowSize={5}
+                    maxToRenderPerBatch={8}
                     removeClippedSubviews
                 />)}
             </View>

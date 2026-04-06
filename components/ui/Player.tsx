@@ -1,10 +1,8 @@
 import axiosInstance from "@/app/utils/axiosInstance";
-import { useAudio } from "@/contexts/PlayerContext";
+import { playerRef, useAudio } from "@/contexts/PlayerContext";
 import { showError, showSuccess } from "@/lib/toast";
 import { MaterialIcons } from '@expo/vector-icons';
-import Slider from '@react-native-community/slider';
 import * as PortalPrimitive from '@rn-primitives/portal';
-import { useAudioPlayerStatus } from "expo-audio";
 import React, { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Dimensions, Image, Modal, Platform, Pressable, Text, TouchableOpacity, useWindowDimensions, View } from "react-native";
 import Animated, {
@@ -14,13 +12,18 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import VerticalSlider from "../VerticalSlider";
 import ModalSelectAlbum from "../modals/ModalSelectAlbum";
+import PlayerFinishHandler from "../Player/PlayerFinishHandler";
+import PlayerSlider from "../Player/PlayerSlider";
+import PlayerTime from "../Player/PlayerTime";
+import PlayPauseButton from "../Player/PlayPauseButton";
+import VerticalSlider from "../VerticalSlider";
 
 export default function Player() {
+  console.log("🎵 Player render"); 
+  const player = playerRef.current;
   const { 
     currentSongData,
-    player,
     togglePlayPause,
     Thumbnail,
     Duration,
@@ -50,7 +53,19 @@ export default function Player() {
   const [shouldRender, setShouldRender] = useState(false);
   const OFFSCREEN_Y = height + 100;
 
-  const status = useAudioPlayerStatus(player);
+  // Verificar que player exista
+  if (!player) return null;
+
+  const prevProps = useRef<any>({});
+  useEffect(() => {
+    const current = { currentSongData, togglePlayPause, Thumbnail, Duration, prev, next, fetchingNewMediaUrl };
+    Object.keys(current).forEach(key => {
+      if (prevProps.current[key] !== (current as any)[key]) {
+        console.log(`🔄 Player - cambió: ${key}`);
+      }
+    });
+    prevProps.current = current;
+  });
 
   const isSmallPhone = width < 380 || height < 700;  
   const isTablet = width >= 768;
@@ -147,29 +162,6 @@ export default function Player() {
     }
   }, [isFullScreen]);
 
-  useEffect(() => {
-    if(!isNaN(status.duration) && status.duration > 0) {
-      setfetchingNewMediaUrl(false);
-    }
-  }, [status.duration]);
-
-  useEffect(() => {
-    if(!status.didJustFinish) return;
-    const restart = () => {
-      player.seekTo(0);
-      player.play();
-    }
-
-    if(status.didJustFinish && stateRepeat === 0){
-      next();
-    } else if (status.didJustFinish && stateRepeat === 1) {
-      restart()
-    } else if (status.didJustFinish && stateRepeat === 2) {
-      restart();
-      setstateRepeat(0);
-    }
-  }, [status.didJustFinish]);
-
   // Usamos useEffect para que no nos spamee el thumbnail, 
   // Nos aseguramos de que solo se imprima cuando realmente cambie el thumbnail
   // Esto pasa porque en nuestro context el status se va actualizando cada segundo
@@ -188,8 +180,6 @@ export default function Player() {
       player.volume = Volume;
     }
   }, [currentSongData]);
-  // Protegimos que player exista
-  if (!player) return null;
   // Formatear tiempo mm:ss
   const formatTime = (sec: number) => {
     const minutes = Math.floor(sec / 60);
@@ -227,6 +217,14 @@ export default function Player() {
         setPlayerHeight(height);
       }}
       style={{display: currentSongData ? "flex" : "none", backgroundColor: "#121212", borderTopWidth: 2, borderTopColor: "#333", flex: 1}}>
+      {/* PlayerFinishHandler cuando carga la cancion se actualiza fetchingNewMediaUrl */}
+      <PlayerFinishHandler 
+        player={player}
+        stateRepeat={stateRepeat}
+        setstateRepeat={setstateRepeat}
+        next={next}
+        setfetchingNewMediaUrl={setfetchingNewMediaUrl}
+      />
       {/* PLayer fullscreen */}
       {shouldRender && (
       <PortalPrimitive.Portal name="root">
@@ -333,19 +331,7 @@ export default function Player() {
                   {currentSongData?.title}
                 </Text>
               </View>
-              <Text style={{ color: "#444", fontSize: 16, letterSpacing: 0.5, textAlign: "center", marginBottom: 6 }}>
-                {formatTime(status.currentTime)} · {formatTime(Duration)}
-              </Text>
-              <Slider
-                style={{ width: "100%", height: 28 }}
-                minimumValue={0}
-                maximumValue={Duration}
-                value={status.currentTime}
-                onSlidingComplete={(value) => player.seekTo(value)}
-                minimumTrackTintColor="#FFD700"
-                maximumTrackTintColor="#2a2a2a"
-                thumbTintColor="#FFD700"
-              />
+              <PlayerSlider player={player} Duration={Duration} isFullScreen={isFullScreen} />
             </View>
           
             <View
@@ -379,7 +365,12 @@ export default function Player() {
                 {fetchingNewMediaUrl ? (
                   <ActivityIndicator size="small" color="#000" />
                 ) : (
-                  <MaterialIcons name={status?.playing ? "pause" : "play-arrow"} size={42} color="#000" />
+                  <PlayPauseButton 
+                    player={player}
+                    fetchingNewMediaUrl={fetchingNewMediaUrl}
+                    togglePlayPause={togglePlayPause} size={40}
+                    color="#000" 
+                  />
                 )}
               </TouchableOpacity>
 
@@ -426,18 +417,7 @@ export default function Player() {
       </View>
       {/* SLIDER */}
       <View style={{paddingVertical: 3, display:"flex", flexDirection:"row", alignItems: "center"}}>
-        <Slider
-          style={{flex: 1}}
-          minimumValue={0}
-          maximumValue={Duration}
-          value={status.currentTime}
-          onSlidingComplete={(value) => {
-            player.seekTo(value);
-          }}
-          minimumTrackTintColor="#dadadaff" 
-          maximumTrackTintColor={Platform.OS !== "web" ? "#555" : "transparent"}
-          thumbTintColor={Platform.OS !== "web" ? "#dadadaff" : "transparent"}
-        />
+        <PlayerSlider player={player} Duration={Duration} isFullScreen={isFullScreen} />
       </View>
       {/* THUMBNAIL */}
       <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 12, paddingBottom: 7}}>
@@ -455,8 +435,7 @@ export default function Player() {
           </TouchableOpacity>
           {/* Segundos*/}
           <View style={{marginLeft: 6}}>
-            <Text style={{ color: "#8f8f8fff", paddingRight: 10}}>{formatTime(status.currentTime)}</Text>
-            <Text style={{ color: "#8f8f8fff"}}>{formatTime(Duration)}</Text>
+            <PlayerTime player={player} Duration={Duration} />
           </View>
         </View>
       
@@ -545,13 +524,18 @@ export default function Player() {
             {fetchingNewMediaUrl ? (
               <ActivityIndicator size="small" color="#fff" />
             ) : (
-              <MaterialIcons name={status?.playing ? "pause" : "play-arrow"} size={40} color="#dfdfdfff" />
+              <PlayPauseButton 
+                player={player} 
+                fetchingNewMediaUrl={fetchingNewMediaUrl}
+                togglePlayPause={togglePlayPause}
+                size={40} color="#dfdfdfff"
+              />
             )}
           </TouchableOpacity>
           <TouchableOpacity style={{paddingVertical: 5}} onPress={()=> next()}>
             <MaterialIcons name="skip-next" size={25} color="#dfdfdfff" />
           </TouchableOpacity>
-          <View style={{ width: isSmallPhone ? 0 : leftWidth }} />
+          <View style={{ width: isSmallPhone || !isWeb ? 0 : leftWidth }} />
         </View>
         {/* Fin actions */}
       </View>

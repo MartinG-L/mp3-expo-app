@@ -3,14 +3,14 @@ import axiosInstance from "@/app/utils/axiosInstance";
 import { showSessionExpired } from "@/lib/toast";
 import { AudioPlayer, setAudioModeAsync, useAudioPlayer } from "expo-audio";
 import { router } from 'expo-router';
-import React, { createContext, useContext, useEffect, useRef, useState } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useAuth } from "./AuthContext";
 
 import { NativeModules } from 'react-native';
 const { NewPipeModule } = NativeModules;
 
+
 type AudioContextType = {
-  player: AudioPlayer;
   queueAndPlay: (queue: SongData[],  index: number) => void;
   next: () => void;
   prev: () => void;
@@ -55,9 +55,11 @@ interface PlaylistsUser {
 
 const AudioContext = createContext<AudioContextType | undefined>(undefined);
 
+
 export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   console.log("🎧 AudioProvider render");
   const player = useAudioPlayer();
+  playerRef.current = player;
   const [audioReady, setAudioReady] = useState(false);
   const [Thumbnail, setThumbnail] = useState<string | null>(null);
   const [Duration, setDuration] = useState(0);
@@ -72,9 +74,12 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [currentIndex, setCurrentIndex] = useState(0);
   const [tabBarHeight, setTabBarHeight] = useState(0);
   const [fetchingNewMediaUrl, setfetchingNewMediaUrl] = useState(false);
-  const {token, logout} = useAuth();
+  const { token, logout } = useAuth();
 
-  const authToken = token ? token : "";
+  const authTokenRef = useRef(token ?? "");
+  useEffect(() => {
+    authTokenRef.current = token ?? "";
+  }, [token]);
 
   useEffect(() => {
     player.remove();
@@ -93,42 +98,22 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     configureAudio();
   }, []);
 
+  const queueRef = useRef<SongData[]>([]);
+  const currentIndexRef = useRef(0);
+  const audioReadyRef = useRef(false);
+  const currentSongDataRef = useRef<SongData | null>(null);
 
-  useEffect(() => {
-    const song: SongData = queue[currentIndex];
-    if(song){
-      playCurrentSong(song);
-    }
-  }, [currentIndex, queue]);
+  useEffect(() => { queueRef.current = queue; }, [queue]);
+  useEffect(() => { currentIndexRef.current = currentIndex; }, [currentIndex]);
+  useEffect(() => { audioReadyRef.current = audioReady; }, [audioReady]);
+  useEffect(() => { currentSongDataRef.current = currentSongData; }, [currentSongData]);
 
-
-
-  const next = async () => {
-    console.log("Next song");
-    if(queue.length === 0) return;
-    setCurrentIndex((i)=>{
-      const nextIndex = i + 1;
-      return nextIndex < queue.length ? nextIndex : 0;
-    })
-  };
-
-  const prev = () => {
-    console.log("Prev song");
-    if (queue.length === 0) return;
-    setCurrentIndex((i) => {
-      const prevIndex = i - 1;
-      return prevIndex >= 0 ? prevIndex : queue.length - 1;
-    });
-  };
-
-  const playCurrentSong = async (song: SongData) => {
-    if (!audioReady) return;
+  const playCurrentSong = useCallback(async (song: SongData) => {
+    if (!audioReadyRef.current) return;
     let finalSong = song;
-    let mediaUrl = "";
     setfetchingNewMediaUrl(true);
     try {
-      const requestMediaUrl = `${process.env.EXPO_PUBLIC_API_URL}/api/audio/stream?videoId=${encodeURIComponent(finalSong.videoId)}&token=${encodeURIComponent(authToken)}`;
-      // Verificar si el token es valido antes de intentar reproducir la cancion
+      const requestMediaUrl = `${process.env.EXPO_PUBLIC_API_URL}/api/audio/stream?videoId=${encodeURIComponent(finalSong.videoId)}&token=${encodeURIComponent(authTokenRef.current)}`;
       const check = await fetch(requestMediaUrl, { method: 'HEAD' });
       if (check.status === 401) {
         logout();
@@ -136,7 +121,7 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         showSessionExpired("Sesión expirada. Por favor, inicia sesión nuevamente.");
         return;
       }
-      if(!song.videoId){
+      if (!song.videoId) {
         const searchSong = await axiosInstance.get("/api/audio/search?searchSong=" + encodeURIComponent(song.title) + "&fromSearchPrecise=true");
         finalSong = {
           ...song,
@@ -144,8 +129,8 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           duration: searchSong.data[0].duration,
           urlThumbnail: searchSong.data[0].urlThumbnail,
         };
-      } 
-      mediaUrl = await NewPipeModule.getAudioUrl(finalSong.videoId);
+      }
+      const mediaUrl = await NewPipeModule.getAudioUrl(finalSong.videoId);
       player.replace({ uri: mediaUrl });
       setCurrentSongData(finalSong);
       setThumbnail(finalSong.urlThumbnail);
@@ -153,153 +138,97 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       player.play();
     } catch (error) {
       console.error("Error al obtener el streamUrl:", error);
-    } 
-  };
+    } finally {
+      setfetchingNewMediaUrl(false);
+    }
+  }, [player, logout]);
 
-  // Creamos indentificador logico ya que en quequeAndPlay cuando usamos preciseSearch
-  // no existe el videoId todavia
-  const getSongKey = (song: SongData) =>
-    song.videoId ??
-    song.recordingId ??
-    song.title.toLowerCase();
+  useEffect(() => {
+    const song = queueRef.current[currentIndex];
+    if (song) playCurrentSong(song);
+  }, [currentIndex, queue, playCurrentSong]);
 
-  const queueAndPlay = (newQueue: SongData[], index: number) => {
+  const next = useCallback(() => {
+    console.log("Next song");
+    if (queueRef.current.length === 0) return;
+    setCurrentIndex((i) => {
+      const nextIndex = i + 1;
+      return nextIndex < queueRef.current.length ? nextIndex : 0;
+    });
+  }, []);
+
+  const prev = useCallback(() => {
+    console.log("Prev song");
+    if (queueRef.current.length === 0) return;
+    setCurrentIndex((i) => {
+      const prevIndex = i - 1;
+      return prevIndex >= 0 ? prevIndex : queueRef.current.length - 1;
+    });
+  }, []);
+
+  const getSongKey = useCallback((song: SongData) =>
+    song.videoId ?? song.recordingId ?? song.title.toLowerCase()
+  , []);
+
+  const queueAndPlay = useCallback((newQueue: SongData[], index: number) => {
     const clickedSong = newQueue[index];
-
     if (
-      currentSongData &&
-      getSongKey(currentSongData) === getSongKey(clickedSong)
+      currentSongDataRef.current &&
+      getSongKey(currentSongDataRef.current) === getSongKey(clickedSong)
     ) {
-      togglePlayPause();
+      player.playing ? player.pause() : player.play();
       return;
     }
-
     setQueue(newQueue);
     setCurrentIndex(index);
-  };
+  }, [player, getSongKey]);
 
-  // const handleLike = () => {
-  //   if (!currentSongData) return;
-    
-  //   const wasLiked = likedSongs.has(currentSongData.videoId);
-  //   const nowLiked = !wasLiked;
-    
-  //   // Cambia el estado visual instantáneamente
-  //   setIsLiked(nowLiked);
-
-  //   // Actualiza likedSongs
-  //   setLikedSongs(prev => {
-  //     const newSet = new Set(prev);
-
-  //     if (wasLiked) {
-  //       newSet.delete(currentSongData.videoId);
-  //     } else {
-  //       newSet.add(currentSongData.videoId);
-  //     }
-
-  //     AsyncStorage.setItem("likedSongs", JSON.stringify([...newSet]));
-  //     return newSet;
-  //   });
-
-  //   // Actualiza las playlists
-  //   setListUserPlaylist(prev => {
-  //     const updatedPlaylists = prev.map(playlist => {
-  //       if (playlist.is_default) {
-  //         if (nowLiked) {
-  //           // Agregar cancion si no existe
-  //           const songExists = playlist.songs.some(s => s.videoId === currentSongData.videoId);
-  //           if (!songExists) {
-  //             const newSong = {
-  //               id: currentSongData.id,
-  //               title: currentSongData.title,
-  //               videoId: currentSongData.videoId,
-  //               urlThumbnail: currentSongData.urlThumbnail,
-  //               duration: currentSongData.duration
-  //             };
-  //             return {
-  //               ...playlist,
-  //               songs: [newSong,...playlist.songs]
-  //             };
-  //           }
-  //         } else {
-  //           // Eliminar la cancion
-  //           return {
-  //             ...playlist,
-  //             songs: playlist.songs.filter(s => s.videoId !== currentSongData.videoId)
-  //           };
-  //         }
-  //       }
-  //       return playlist;
-  //     });
-
-  //     // Actualizamos el AsyncStorage
-  //     AsyncStorage.setItem("listUserPlaylist", JSON.stringify(updatedPlaylists));
-      
-  //     return updatedPlaylists;
-  //   });
-
-  //   // Si había timeout se cancela aquí
-  //   if (timeoutRef.current) clearTimeout(timeoutRef.current);
-
-  //   // Creamos timeout para sincronizar con el backend
-  //   timeoutRef.current = setTimeout(async () => {
-  //     try {
-  //       const payload = {
-  //         videoId: currentSongData?.videoId,
-  //         title: currentSongData?.title,
-  //         thumbnail: currentSongData?.urlThumbnail,
-  //         duration: currentSongData?.duration
-  //       };
-
-  //       if (nowLiked) {
-  //         await axiosInstance.post(`/api/albums/likesong?userId=${userId}`, payload);
-  //       } else {
-  //         await axiosInstance.delete(`/api/albums/likesong?userId=${userId}&videoId=${currentSongData.videoId}`);
-  //       }
-  //     } catch (error) {
-  //       console.error("Error updating like:", error);
-  //     }
-  //   }, 1000);
-  // };
-
-
-  const togglePlayPause = () => {
-    if (!player) return;
-    // Lo tenia por lo de ffmpeg + ytdlp que no servia bien el seekTo
-    // if(status.currentTime >= Duration){
-    //   player.seekTo(0)
-    //   player.play();
-    //   return
-    // } 
+  const togglePlayPause = useCallback(() => {
     player.playing ? player.pause() : player.play();
-  };
+  }, [player]);
 
+  const value = useMemo(() => ({
+    queueAndPlay,
+    next,
+    prev,
+    togglePlayPause,
+    Thumbnail,
+    Duration,
+    setPlayerHeight,
+    PlayerHeight,
+    isLiked,
+    setLikedSongs,
+    likedSongs,
+    updatePlaylist,
+    setQueue,
+    setCurrentIndex,
+    setTabBarHeight,
+    tabBarHeight,
+    setListUserPlaylist,
+    listUserPlaylist,
+    currentSongData,
+    fetchingNewMediaUrl,
+    setfetchingNewMediaUrl,
+  }), [
+    player,
+    queueAndPlay,
+    next,
+    prev,
+    togglePlayPause,
+    Thumbnail,
+    Duration,
+    PlayerHeight,
+    isLiked,
+    likedSongs,
+    updatePlaylist,
+    tabBarHeight,
+    listUserPlaylist,
+    currentSongData,
+    fetchingNewMediaUrl,
+  ]);
 
   return (
-    <AudioContext.Provider value={{
-      player,
-      queueAndPlay,
-      next,
-      prev,
-      togglePlayPause,
-      Thumbnail,
-      Duration,
-      setPlayerHeight,
-      PlayerHeight,
-      isLiked,
-      setLikedSongs,
-      likedSongs,
-      updatePlaylist,
-      setQueue,
-      setCurrentIndex,
-      setTabBarHeight,
-      tabBarHeight,
-      setListUserPlaylist,
-      listUserPlaylist,
-      currentSongData,
-      fetchingNewMediaUrl,
-      setfetchingNewMediaUrl
-    }}>
+    <AudioContext.Provider value={value}>
       {children}
     </AudioContext.Provider>
   );
@@ -310,3 +239,5 @@ export const useAudio = () => {
   if (!context) throw new Error("useAudio must be used within an AudioProvider");
   return context;
 };
+
+export const playerRef = { current: null as AudioPlayer | null };
