@@ -1,4 +1,5 @@
 import axiosInstance from '@/app/utils/axiosInstance';
+import { useAudioState } from '@/contexts/AudioStateContext';
 import { useAudio } from '@/contexts/PlayerContext';
 import { MaterialIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -47,7 +48,8 @@ export default function ModalPlaylists({
   setIsEditing,
   setModalCreatePlaylistVisible
 }: ModalPlaylistsProps){
-    const {queueAndPlay, setListUserPlaylist, currentSongData} = useAudio();
+    const {queueAndPlay, setListUserPlaylist} = useAudio();
+    const {currentSongData} = useAudioState();
     const [showConfirmDelete, setshowConfirmDelete] = useState(false);
 
     const deletePlaylist = async (playlistId: number)=>{

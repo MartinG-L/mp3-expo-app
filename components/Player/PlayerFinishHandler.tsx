@@ -1,11 +1,14 @@
+import { useAudioState } from "@/contexts/AudioStateContext";
 import { useAudioPlayerStatus } from "expo-audio";
 import { useEffect } from "react";
-const PlayerFinishHandler = ({ player, stateRepeat, setstateRepeat, next, setfetchingNewMediaUrl }: any) => {
+
+const PlayerFinishHandler = ({ player, stateRepeat, setstateRepeat, next }: any) => {
   const status = useAudioPlayerStatus(player);
+  const {updateAudioState} = useAudioState();
 
   useEffect(() => {
     if (!isNaN(status.duration) && status.duration > 0) {
-      setfetchingNewMediaUrl(false);
+      updateAudioState({ fetchingNewMediaUrl: false})
     }
   }, [status.duration]);
 

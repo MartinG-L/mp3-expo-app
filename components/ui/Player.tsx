@@ -1,4 +1,5 @@
 import axiosInstance from "@/app/utils/axiosInstance";
+import { useAudioState } from "@/contexts/AudioStateContext";
 import { playerRef, useAudio } from "@/contexts/PlayerContext";
 import { showError, showSuccess } from "@/lib/toast";
 import { MaterialIcons } from '@expo/vector-icons';
@@ -22,18 +23,14 @@ import VerticalSlider from "../VerticalSlider";
 export default function Player() {
   console.log("🎵 Player render"); 
   const player = playerRef.current;
-  const { 
-    currentSongData,
+  const {  
     togglePlayPause,
-    Thumbnail,
-    Duration,
     setPlayerHeight,
     prev,
     next,
     setListUserPlaylist,
-    fetchingNewMediaUrl,
-    setfetchingNewMediaUrl
   } = useAudio();
+  const { currentSongData, Thumbnail, Duration, fetchingNewMediaUrl } = useAudioState();
   let [newThumbnail, setnewThumbnail] = useState<string | null>(null);
   let [UpdateCurrentSong, setUpdateCurrentSong] = useState<string|null>(null);
   const { width: screenWidth } = Dimensions.get('window');
@@ -55,17 +52,6 @@ export default function Player() {
 
   // Verificar que player exista
   if (!player) return null;
-
-  const prevProps = useRef<any>({});
-  useEffect(() => {
-    const current = { currentSongData, togglePlayPause, Thumbnail, Duration, prev, next, fetchingNewMediaUrl };
-    Object.keys(current).forEach(key => {
-      if (prevProps.current[key] !== (current as any)[key]) {
-        console.log(`🔄 Player - cambió: ${key}`);
-      }
-    });
-    prevProps.current = current;
-  });
 
   const isSmallPhone = width < 380 || height < 700;  
   const isTablet = width >= 768;
@@ -137,10 +123,14 @@ export default function Player() {
         })
       );
     } catch (err: any) {
-      if (err.req?.status === 404) {
-        showError("La playlist no existe");
-      } else {
-        showError("No se pudo eliminar la playlist");
+      if (!err.response) {
+          showError("No se pudo conectar al servidor");
+        } else if (err.response?.status === 500) {
+          showError("Error interno del servidor");
+        } else if (err.response?.status === 404) {
+          showError("La playlist no existe");
+        } else {
+          showError("No se pudo completar la operación");
       }
     }
   };
@@ -166,10 +156,6 @@ export default function Player() {
   // Nos aseguramos de que solo se imprima cuando realmente cambie el thumbnail
   // Esto pasa porque en nuestro context el status se va actualizando cada segundo
   useEffect(() => {
-    setnewThumbnail(Thumbnail);
-    setUpdateCurrentSong(currentSongData?.title ?? "");
-  }, [Thumbnail, currentSongData]);
-  useEffect(() => {
     modalVolumeVisble && measureVolumeBtn();
   }, [modalVolumeVisble, width, height]);
   useEffect(() => {
@@ -180,12 +166,6 @@ export default function Player() {
       player.volume = Volume;
     }
   }, [currentSongData]);
-  // Formatear tiempo mm:ss
-  const formatTime = (sec: number) => {
-    const minutes = Math.floor(sec / 60);
-    const seconds = Math.floor(sec % 60);
-    return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-  };
 
   const measureVolumeBtn = () => {
     volumeRef.current?.measureInWindow((pageX, pageY, w, h) => {
@@ -223,7 +203,6 @@ export default function Player() {
         stateRepeat={stateRepeat}
         setstateRepeat={setstateRepeat}
         next={next}
-        setfetchingNewMediaUrl={setfetchingNewMediaUrl}
       />
       {/* PLayer fullscreen */}
       {shouldRender && (
@@ -297,7 +276,7 @@ export default function Player() {
             >
               <Image
                 resizeMode="cover"
-                source={newThumbnail ? { uri: newThumbnail } : undefined}
+                source={Thumbnail ? { uri: Thumbnail } : undefined}
                 style={{ width: "100%", height: "100%" }}
               />
             </View>
@@ -429,7 +408,7 @@ export default function Player() {
             setIsFullScreen(prev => !prev) 
           }}>
             <Image 
-              source={newThumbnail ? { uri: newThumbnail } : undefined}
+              source={Thumbnail ? { uri: Thumbnail } : undefined}
               style={{ width: 60, height: 60, borderRadius: 3}} 
             />
           </TouchableOpacity>
@@ -542,3 +521,7 @@ export default function Player() {
     </View>
   );
 }
+function AudioState(): { currentSongData: any; Thumbnail: any; Duration: any; fetchingNewMediaUrl: any; } {
+  throw new Error("Function not implemented.");
+}
+

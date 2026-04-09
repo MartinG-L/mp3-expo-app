@@ -47,9 +47,18 @@ class NewPipeModule(reactContext: ReactApplicationContext) :
                 val streams = extractor.audioStreams
 
                 val url = streams
-                    .filter { it.format != null }
+                    .filter { it.format?.mimeType?.contains("audio/mp4") == true }
                     .maxByOrNull { it.averageBitrate }
                     ?.content
+                    ?: streams
+                        .maxByOrNull { it.averageBitrate }
+                        ?.content
+
+                streams.forEach { 
+                    Log.d("NewPipeModule", "Stream: ${it.format?.mimeType} - ${it.averageBitrate}kbps")
+                }
+
+                Log.d("NewPipeModule", "URL seleccionada mime: ${streams.find { it.content == url }?.format?.mimeType} - ${streams.find { it.content == url }?.averageBitrate}kbps")
 
                 Log.d("NewPipeModule", "URL obtenida: $url")
 
