@@ -6,8 +6,7 @@ import { router } from 'expo-router';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useAuth } from "./AuthContext";
 
-import { NativeModules } from 'react-native';
-const { NewPipeModule } = NativeModules;
+import { AudioState, AudioStateContext } from "./AudioStateContext";
 
 
 type AudioContextType = {
@@ -15,8 +14,6 @@ type AudioContextType = {
   next: () => void;
   prev: () => void;
   togglePlayPause: () => void;
-  Thumbnail: string | null;
-  Duration: number;
   PlayerHeight: number;
   setPlayerHeight:  React.Dispatch<React.SetStateAction<number>>;
   setLikedSongs: React.Dispatch<React.SetStateAction<Set<string>>>;
@@ -29,9 +26,6 @@ type AudioContextType = {
   updatePlaylist: boolean;
   setListUserPlaylist: React.Dispatch<React.SetStateAction<PlaylistsUser[]>>;
   listUserPlaylist: PlaylistsUser[]
-  currentSongData: SongData | null;
-  fetchingNewMediaUrl: boolean;
-  setfetchingNewMediaUrl: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 type SongData = {
@@ -61,11 +55,8 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const player = useAudioPlayer();
   playerRef.current = player;
   const [audioReady, setAudioReady] = useState(false);
-  const [Thumbnail, setThumbnail] = useState<string | null>(null);
-  const [Duration, setDuration] = useState(0);
   const [PlayerHeight, setPlayerHeight] = useState(0);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [currentSongData, setCurrentSongData] = useState<SongData | null>(null);
   const [isLiked, setIsLiked] = useState(false);
   const [likedSongs, setLikedSongs] = useState<Set<string>>(new Set());
   const [listUserPlaylist, setListUserPlaylist] = useState<PlaylistsUser[]>([]);
@@ -73,8 +64,16 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [queue, setQueue] = useState<SongData[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [tabBarHeight, setTabBarHeight] = useState(0);
-  const [fetchingNewMediaUrl, setfetchingNewMediaUrl] = useState(false);
   const { token, logout } = useAuth();
+  const [audioState, setAudioState] = useState<AudioState>({
+    currentSongData: null,
+    Thumbnail: null,
+    Duration: 0,
+    fetchingNewMediaUrl: false,
+  });
+  const updateAudioState = useCallback((data: Partial<AudioState>) => {
+    setAudioState(prev => ({ ...prev, ...data }));
+  }, []);
 
   const authTokenRef = useRef(token ?? "");
   useEffect(() => {
@@ -102,16 +101,21 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const currentIndexRef = useRef(0);
   const audioReadyRef = useRef(false);
   const currentSongDataRef = useRef<SongData | null>(null);
+  const audioStateValue = useMemo(() => ({
+    ...audioState,
+    setAudioState,
+    updateAudioState,
+  }), [audioState]);
 
   useEffect(() => { queueRef.current = queue; }, [queue]);
   useEffect(() => { currentIndexRef.current = currentIndex; }, [currentIndex]);
   useEffect(() => { audioReadyRef.current = audioReady; }, [audioReady]);
-  useEffect(() => { currentSongDataRef.current = currentSongData; }, [currentSongData]);
+  useEffect(() => { currentSongDataRef.current = audioState.currentSongData; }, [audioState.currentSongData]);
 
   const playCurrentSong = useCallback(async (song: SongData) => {
     if (!audioReadyRef.current) return;
     let finalSong = song;
-    setfetchingNewMediaUrl(true);
+    updateAudioState({ fetchingNewMediaUrl: true });
     try {
       const requestMediaUrl = `${process.env.EXPO_PUBLIC_API_URL}/api/audio/stream?videoId=${encodeURIComponent(finalSong.videoId)}&token=${encodeURIComponent(authTokenRef.current)}`;
       const check = await fetch(requestMediaUrl, { method: 'HEAD' });
@@ -130,16 +134,20 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           urlThumbnail: searchSong.data[0].urlThumbnail,
         };
       }
-      const mediaUrl = await NewPipeModule.getAudioUrl(finalSong.videoId);
+      const mediaUrl = `${process.env.EXPO_PUBLIC_API_URL}/api/audio/stream?videoId=${encodeURIComponent(finalSong.videoId)}&token=${encodeURIComponent(authTokenRef.current)}`;
       player.replace({ uri: mediaUrl });
-      setCurrentSongData(finalSong);
-      setThumbnail(finalSong.urlThumbnail);
-      setDuration(finalSong.duration);
+      setAudioState(prev => ({
+        ...prev,
+        currentSongData: finalSong,
+        Thumbnail: finalSong.urlThumbnail,
+        Duration: finalSong.duration,
+        fetchingNewMediaUrl: false,
+      }));
       player.play();
     } catch (error) {
       console.error("Error al obtener el streamUrl:", error);
     } finally {
-      setfetchingNewMediaUrl(false);
+      updateAudioState({ fetchingNewMediaUrl: false });
     }
   }, [player, logout]);
 
@@ -192,8 +200,6 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     next,
     prev,
     togglePlayPause,
-    Thumbnail,
-    Duration,
     setPlayerHeight,
     PlayerHeight,
     isLiked,
@@ -206,31 +212,28 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     tabBarHeight,
     setListUserPlaylist,
     listUserPlaylist,
-    currentSongData,
-    fetchingNewMediaUrl,
-    setfetchingNewMediaUrl,
+    currentSongDataRef,
   }), [
     player,
     queueAndPlay,
     next,
     prev,
     togglePlayPause,
-    Thumbnail,
-    Duration,
     PlayerHeight,
     isLiked,
     likedSongs,
     updatePlaylist,
     tabBarHeight,
     listUserPlaylist,
-    currentSongData,
-    fetchingNewMediaUrl,
+    currentSongDataRef,
   ]);
 
   return (
-    <AudioContext.Provider value={value}>
-      {children}
-    </AudioContext.Provider>
+    <AudioStateContext.Provider value={audioStateValue}>
+      <AudioContext.Provider value={value}>
+        {children}
+      </AudioContext.Provider>
+    </AudioStateContext.Provider>
   );
 };
 

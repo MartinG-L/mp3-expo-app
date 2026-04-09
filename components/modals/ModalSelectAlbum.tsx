@@ -1,3 +1,4 @@
+import { useAudioState } from '@/contexts/AudioStateContext';
 import { useAudio } from '@/contexts/PlayerContext';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
@@ -13,7 +14,8 @@ interface Props {
 export default function SelectAlbumModal({ visible, onClose, onSelect }: Props) {
   const [selectedPlaylist, setSelectedPlaylist] = useState<Set<number>>(new Set());
   const [initialPlaylist, setInitialPlaylist] = useState<Set<number>>(new Set());
-  const { listUserPlaylist, currentSongData, tabBarHeight, PlayerHeight } = useAudio();
+  const { listUserPlaylist, tabBarHeight, PlayerHeight } = useAudio();
+  const {currentSongData} = useAudioState();
   
   const isDisabled =
   selectedPlaylist.size === initialPlaylist.size &&
