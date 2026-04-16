@@ -48,6 +48,7 @@ export default function Player() {
   const insets = useSafeAreaInsets();
   const fullScreenY = useSharedValue(1000);
   const [shouldRender, setShouldRender] = useState(false);
+  const [fullyVisible, setFullyVisible] = useState(false);
   const OFFSCREEN_Y = height + 100;
 
   // Verificar que player exista
@@ -139,11 +140,17 @@ export default function Player() {
     transform: [{ translateY: fullScreenY.value }],
   }));
 
+
   useEffect(() => {
     if (isFullScreen) {
       setShouldRender(true);
-      fullScreenY.value = withTiming(0, { duration: 300 });
+      fullScreenY.value = withTiming(0, { duration: 300 }, (finished) => {
+        if (finished) {
+          runOnJS(setFullyVisible)(true); 
+        }
+      });
     } else {
+      setFullyVisible(false); 
       fullScreenY.value = withTiming(OFFSCREEN_Y, { duration: 200 }, (finished) => {
         if (finished) {
           runOnJS(setShouldRender)(false);
@@ -310,7 +317,10 @@ export default function Player() {
                   {currentSongData?.title}
                 </Text>
               </View>
-              <PlayerSlider player={player} Duration={Duration} isFullScreen={isFullScreen} />
+              {/* time */}
+              <PlayerTime player={player} Duration={Duration} variant="full" />
+              {/* slider */}
+              <PlayerSlider player={player} Duration={Duration} />
             </View>
           
             <View
@@ -396,7 +406,7 @@ export default function Player() {
       </View>
       {/* SLIDER */}
       <View style={{paddingVertical: 3, display:"flex", flexDirection:"row", alignItems: "center"}}>
-        <PlayerSlider player={player} Duration={Duration} isFullScreen={isFullScreen} />
+        <PlayerSlider player={player} Duration={Duration}/>
       </View>
       {/* THUMBNAIL */}
       <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 12, paddingBottom: 7}}>
@@ -414,7 +424,7 @@ export default function Player() {
           </TouchableOpacity>
           {/* Segundos*/}
           <View style={{marginLeft: 6}}>
-            <PlayerTime player={player} Duration={Duration} />
+            <PlayerTime player={player} Duration={Duration} variant="mini" />
           </View>
         </View>
       
