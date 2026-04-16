@@ -1,6 +1,7 @@
 import ModalCreatePlaylist from '@/components/modals/ModalCreatePlaylist';
 import ModalPlaylists from '@/components/modals/ModalPlaylists';
 import { Text } from '@/components/mytext';
+import { useAudioState } from '@/contexts/AudioStateContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAudio } from '@/contexts/PlayerContext';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -39,7 +40,8 @@ export default function HomeScreen() {
   }
 
   const {logout, userId, token} = useAuth();
-  const {setQueue, currentSongData, PlayerHeight, setListUserPlaylist, listUserPlaylist} = useAudio(); 
+  const {setQueue, PlayerHeight, setListUserPlaylist, listUserPlaylist} = useAudio(); 
+  const {currentSongData} = useAudioState();
   const [playLists, setplayLists] = useState<Playlists[]>([]);
   const [playListData, setplayListData] = useState<PlayListData | null>(null);
   const [ModalPlaylistVisible, setModalPlaylistVisible] = useState(false);

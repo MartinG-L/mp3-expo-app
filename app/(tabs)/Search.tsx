@@ -1,3 +1,4 @@
+import { useAudioState } from '@/contexts/AudioStateContext';
 import { useAudio } from '@/contexts/PlayerContext';
 import { Stack } from 'expo-router';
 import React, { useEffect, useState } from 'react';
@@ -18,7 +19,8 @@ export default function Search() {
     const [searchSong, setSearchSong] = useState("");
     const [isLoading, setisLoading] = useState(false);
     const [resultList, setresultList] = useState<videoResult[]>([]);
-    const {queueAndPlay, currentSongData, PlayerHeight} = useAudio(); 
+    const {queueAndPlay, PlayerHeight} = useAudio(); 
+    const { currentSongData } = useAudioState();
     const [precise, setPrecise] = useState(false);
 
     useEffect(() => {

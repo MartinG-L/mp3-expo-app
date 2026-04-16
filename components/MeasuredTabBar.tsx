@@ -12,7 +12,7 @@ export function MeasuredTabBar(props: BottomTabBarProps) {
     <View
       onLayout={(e) => {
         const height = e.nativeEvent.layout.height;
-        setTabBarHeight(height);
+         setTabBarHeight(prev => (prev === height ? prev : height));
       }}
     >
       <BottomTabBar {...props} />

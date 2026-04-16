@@ -201,7 +201,7 @@ export default function Player() {
     <View 
       onLayout={(event) => {
         const { height } = event.nativeEvent.layout;
-        setPlayerHeight(height);
+        setPlayerHeight(prev => (prev === height ? prev : height));
       }}
       style={{display: currentSongData ? "flex" : "none", backgroundColor: "#121212", borderTopWidth: 2, borderTopColor: "#333", flex: 1}}>
       {/* PlayerFinishHandler cuando carga la cancion se actualiza fetchingNewMediaUrl */}
