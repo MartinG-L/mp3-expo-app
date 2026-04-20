@@ -146,15 +146,14 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       player.play();
     } catch (error) {
       console.error("Error al obtener el streamUrl:", error);
-    } finally {
       updateAudioState({ fetchingNewMediaUrl: false });
-    }
-  }, [player, logout]);
+    } 
+  }, [logout]);
 
   useEffect(() => {
     const song = queueRef.current[currentIndex];
     if (song) playCurrentSong(song);
-  }, [currentIndex, queue, playCurrentSong]);
+  }, [currentIndex, playCurrentSong]);
 
   const next = useCallback(() => {
     console.log("Next song");
@@ -179,7 +178,11 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   , []);
 
   const queueAndPlay = useCallback((newQueue: SongData[], index: number) => {
+    const player = playerRef.current;
+    if (!player) return;
+    
     const clickedSong = newQueue[index];
+    
     if (
       currentSongDataRef.current &&
       getSongKey(currentSongDataRef.current) === getSongKey(clickedSong)
@@ -187,13 +190,34 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       player.playing ? player.pause() : player.play();
       return;
     }
+
+    // Actualizar el ref inmediatamente para que el efecto no duplique
+    queueRef.current = newQueue;
+
     setQueue(newQueue);
-    setCurrentIndex(index);
-  }, [player, getSongKey]);
+
+    if (currentIndexRef.current === index) {
+      playCurrentSong(clickedSong);
+    } else {
+      setCurrentIndex(index);
+    }
+  }, [getSongKey, playCurrentSong]);
 
   const togglePlayPause = useCallback(() => {
     player.playing ? player.pause() : player.play();
-  }, [player]);
+  }, []);
+
+  const state: Record<string, unknown> = { 
+    audioState, 
+    queue, 
+    currentIndex, 
+    PlayerHeight, 
+    isLiked, 
+    likedSongs, 
+    updatePlaylist, 
+    tabBarHeight, 
+    listUserPlaylist 
+  };
 
   const value = useMemo(() => ({
     queueAndPlay,
@@ -214,7 +238,6 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     listUserPlaylist,
     currentSongDataRef,
   }), [
-    player,
     queueAndPlay,
     next,
     prev,

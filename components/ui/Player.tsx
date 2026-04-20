@@ -159,9 +159,6 @@ export default function Player() {
     modalVolumeVisble && measureVolumeBtn();
   }, [modalVolumeVisble, width, height]);
   useEffect(() => {
-    player.volume = Volume;
-  }, [Volume]);
-  useEffect(() => {
     if (currentSongData) {
       player.volume = Volume;
     }
@@ -497,7 +494,7 @@ export default function Player() {
             <MaterialIcons name="skip-previous" size={25} color="#dfdfdfff" />
           </TouchableOpacity >
           <TouchableOpacity 
-            style={{ padding: 5, width: 40, minHeight: 40, alignItems: "center", justifyContent: "center" }} 
+            style={{ padding: 5, width: 40, height: 60, alignItems: "center", justifyContent: "center" }} 
             onPress={togglePlayPause}
           >
             {fetchingNewMediaUrl ? (
