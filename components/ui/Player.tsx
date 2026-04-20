@@ -307,7 +307,8 @@ export default function Player() {
                   {currentSongData?.title}
                 </Text>
               </View>
-              <PlayerSlider player={player} Duration={Duration} isFullScreen={isFullScreen} />
+              <PlayerTime player={player} Duration={Duration} variant="full" />
+              <PlayerSlider player={player} Duration={Duration} />
             </View>
           
             <View
@@ -393,7 +394,7 @@ export default function Player() {
       </View>
       {/* SLIDER */}
       <View style={{paddingVertical: 3, display:"flex", flexDirection:"row", alignItems: "center"}}>
-        <PlayerSlider player={player} Duration={Duration} isFullScreen={isFullScreen} />
+        <PlayerSlider player={player} Duration={Duration} />
       </View>
       {/* THUMBNAIL */}
       <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 12, paddingBottom: 7}}>
@@ -411,7 +412,7 @@ export default function Player() {
           </TouchableOpacity>
           {/* Segundos*/}
           <View style={{marginLeft: 6}}>
-            <PlayerTime player={player} Duration={Duration} />
+            <PlayerTime player={player} Duration={Duration} variant="mini" />
           </View>
         </View>
       

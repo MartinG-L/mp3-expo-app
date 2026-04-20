@@ -4,9 +4,10 @@ import { Text, View } from "react-native";
 type Props = {
   player: any;
   Duration: number;
+  variant: "mini" | "full";
 };
 
-const PlayerTime = ({ player, Duration }: Props) => {
+const PlayerTime = ({ player, Duration, variant = "mini" }: Props) => {
   const [time, setTime] = useState(0);
 
   useEffect(() => {
@@ -14,7 +15,7 @@ const PlayerTime = ({ player, Duration }: Props) => {
 
     const interval = setInterval(() => {
       setTime(player.currentTime || 0);
-    }, 1000);
+    }, 500);
 
     return () => clearInterval(interval);
   }, [player]);
@@ -25,13 +26,33 @@ const PlayerTime = ({ player, Duration }: Props) => {
     return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
   };
 
+  const current = formatTime(time);
+  const total = formatTime(Duration);
+   if (variant === "mini") {
+    return (
+      <View style={{ marginLeft: 6 }}>
+        <Text style={{ color: "#8f8f8f", paddingRight: 10 }}>
+          {current}
+        </Text>
+        <Text style={{ color: "#8f8f8f" }}>
+          {total}
+        </Text>
+      </View>
+    );
+  }
+
   return (
     <View style={{ marginLeft: 6 }}>
-      <Text style={{ color: "#8f8f8fff", paddingRight: 10 }}>
-        {formatTime(time)}
-      </Text>
-      <Text style={{ color: "#8f8f8fff" }}>
-        {formatTime(Duration)}
+      <Text
+        style={{
+          color: "#444",
+          fontSize: 16,
+          textAlign: "center",
+          letterSpacing: 0.5,
+          marginBottom: 30,
+        }}
+      >
+        {current} · {total}
       </Text>
     </View>
   );
