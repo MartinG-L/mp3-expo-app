@@ -4,11 +4,13 @@ import { useEffect } from "react";
 
 const PlayerFinishHandler = ({ player, stateRepeat, setstateRepeat, next }: any) => {
   const status = useAudioPlayerStatus(player);
-  const {updateAudioState} = useAudioState();
+  const {updateAudioState, fetchingNewMediaUrl} = useAudioState();
+
 
   useEffect(() => {
-    if (!isNaN(status.duration) && status.duration > 0) {
-      updateAudioState({ fetchingNewMediaUrl: false})
+    // agregamos fetchingNewMediaUrl para verificar que se haya cambiado en el context y si no lo cambiamos aqui, el estado se quedaria en true y no se podria reproducir la cancion
+    if (!isNaN(status.duration) && status.duration > 0 && fetchingNewMediaUrl) {
+      updateAudioState({ fetchingNewMediaUrl: false });
     }
   }, [status.duration]);
 
