@@ -1,14 +1,13 @@
 // AudioContext.tsx
 import axiosInstance from "@/app/utils/axiosInstance";
-import { showSessionExpired } from "@/lib/toast";
 import { AudioPlayer, setAudioModeAsync, useAudioPlayer } from "expo-audio";
-import { router } from 'expo-router';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
-import { useAuth } from "./AuthContext";
-
-import { NativeModules } from 'react-native';
+import { NativeEventEmitter, NativeModules } from 'react-native';
 import { AudioState, AudioStateContext } from "./AudioStateContext";
-const { NewPipeModule } = NativeModules;
+import { useAuth } from "./AuthContext";
+const { NewPipeModule, MediaSessionModule } = NativeModules;
+const mediaSessionEmitter = new NativeEventEmitter(NativeModules.MediaSessionModule);
+
 
 
 type AudioContextType = {
@@ -54,6 +53,9 @@ const AudioContext = createContext<AudioContextType | undefined>(undefined);
 
 export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   console.log("🎧 AudioProvider render");
+  useEffect(() => {
+  console.log("MediaSessionModule:", NativeModules.MediaSessionModule);
+}, []);
   const player = useAudioPlayer();
   playerRef.current = player;
   const [audioReady, setAudioReady] = useState(false);
@@ -119,14 +121,6 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     let finalSong = song;
     updateAudioState({ fetchingNewMediaUrl: true });
     try {
-      const requestMediaUrl = `${process.env.EXPO_PUBLIC_API_URL}/api/audio/stream?videoId=${encodeURIComponent(finalSong.videoId)}&token=${encodeURIComponent(authTokenRef.current)}`;
-      const check = await fetch(requestMediaUrl, { method: 'HEAD' });
-      if (check.status === 401) {
-        logout();
-        router.replace('/auth/login');
-        showSessionExpired("Sesión expirada. Por favor, inicia sesión nuevamente.");
-        return;
-      }
       if (!song.videoId) {
         const searchSong = await axiosInstance.get("/api/audio/search?searchSong=" + encodeURIComponent(song.title) + "&fromSearchPrecise=true");
         finalSong = {
@@ -137,7 +131,6 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         };
       }
       const mediaUrl = await NewPipeModule.getAudioUrl(finalSong.videoId);
-      player.replace({ uri: mediaUrl });
       setAudioState(prev => ({
         ...prev,
         currentSongData: finalSong,
@@ -145,6 +138,12 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         Duration: finalSong.duration,
         fetchingNewMediaUrl: false,
       }));
+      await MediaSessionModule.updateMetadata(
+        finalSong.title,
+        finalSong.urlThumbnail,
+        finalSong.duration,
+      );
+      player.replace({ uri: mediaUrl });
       player.play();
     } catch (error) {
       console.error("Error al obtener el streamUrl:", error);
@@ -209,17 +208,21 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     player.playing ? player.pause() : player.play();
   }, []);
 
-  const state: Record<string, unknown> = { 
-    audioState, 
-    queue, 
-    currentIndex, 
-    PlayerHeight, 
-    isLiked, 
-    likedSongs, 
-    updatePlaylist, 
-    tabBarHeight, 
-    listUserPlaylist 
-  };
+  // Escucha eventos del lockscreen
+  useEffect(() => {
+    const subs = [
+      mediaSessionEmitter.addListener('onNext', next),
+      mediaSessionEmitter.addListener('onPrevious', prev),
+      mediaSessionEmitter.addListener('onPlay', togglePlayPause),
+      mediaSessionEmitter.addListener('onPause', togglePlayPause),
+    ];
+    return () => subs.forEach(s => s.remove());
+  }, [next, prev, togglePlayPause]);
+
+  // Limpia al cerrar sesion
+  useEffect(() => {
+    MediaSessionModule.destroy();
+  }, [token]);
 
   const value = useMemo(() => ({
     queueAndPlay,

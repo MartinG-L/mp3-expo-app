@@ -1,6 +1,8 @@
 import { useAudioState } from "@/contexts/AudioStateContext";
 import { useAudioPlayerStatus } from "expo-audio";
 import { useEffect } from "react";
+import { NativeModules } from 'react-native';
+const { MediaSessionModule } = NativeModules;
 
 const PlayerFinishHandler = ({ player, stateRepeat, setstateRepeat, next }: any) => {
   const status = useAudioPlayerStatus(player);
@@ -13,6 +15,14 @@ const PlayerFinishHandler = ({ player, stateRepeat, setstateRepeat, next }: any)
       updateAudioState({ fetchingNewMediaUrl: false });
     }
   }, [status.duration]);
+
+  // Manejo de cambios en el estado de reproduccion para actualizar el Media Session
+  // Con esto obtenemos actualizacion visual del icono play/pause en la barra de notificaciones y lock screen
+   useEffect(() => {
+    if (fetchingNewMediaUrl) return;
+    MediaSessionModule.updateState(status.playing, 0)
+      .catch((e: any) => console.error("updateState error:", e));
+  }, [status.playing, fetchingNewMediaUrl]);
 
   useEffect(() => {
     if (!status.didJustFinish) return;

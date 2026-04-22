@@ -13,6 +13,7 @@ import com.facebook.react.common.ReleaseLevel
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint
 import com.facebook.react.defaults.DefaultReactNativeHost
 import com.martingl.mp3kz.newpipe.NewPipePackage
+import com.martingl.mp3kz.mediasession.MediaSessionPackage
 
 import expo.modules.ApplicationLifecycleDispatcher
 import expo.modules.ReactNativeHostWrapper
@@ -27,6 +28,7 @@ class MainApplication : Application(), ReactApplication {
               // Packages that cannot be autolinked yet can be added manually here, for example:
               // add(MyReactNativePackage())
               add(NewPipePackage())
+              add(MediaSessionPackage())
             }
 
           override fun getJSMainModuleName(): String = ".expo/.virtual-metro-entry"

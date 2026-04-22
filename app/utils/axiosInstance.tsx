@@ -27,7 +27,7 @@ axiosInstance.interceptors.request.use(
 axiosInstance.interceptors.response.use(
   (response) => response, 
   async (error) => {
-    if (error.response?.status === 401) {
+    if (error.response?.status === 401 || error.response?.status === 403) {
         const logout = getLogout();
         logout && logout();
         router.replace("/auth/login");
