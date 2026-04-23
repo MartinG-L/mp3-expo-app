@@ -216,6 +216,9 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       mediaSessionEmitter.addListener('onPrevious', prev),
       mediaSessionEmitter.addListener('onPlay', togglePlayPause),
       mediaSessionEmitter.addListener('onPause', togglePlayPause),
+      mediaSessionEmitter.addListener('onSeek', (data: { position: number }) => {
+        playerRef.current?.seekTo(data.position);
+      }),
     ];
     return () => subs.forEach(s => s.remove());
   }, [next, prev, togglePlayPause]);

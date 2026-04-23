@@ -17,6 +17,7 @@ import com.facebook.react.modules.core.DeviceEventManagerModule
 import java.net.URL
 import android.graphics.Bitmap
 import kotlin.math.min
+import android.os.SystemClock
 
 class MediaSessionModule(reactContext: ReactApplicationContext) :
     ReactContextBaseJavaModule(reactContext) {
@@ -27,6 +28,8 @@ class MediaSessionModule(reactContext: ReactApplicationContext) :
     private var notificationManager: NotificationManager? = null
     var currentIsPlaying: Boolean = false
     var isLoading: Boolean = false
+    var currentPositionMs: Long = 0
+    var justSeeked: Boolean = false
 
     // singleton para que MediaButtonReceiver pueda acceder
     companion object {
@@ -75,6 +78,9 @@ class MediaSessionModule(reactContext: ReactApplicationContext) :
                     val params = Arguments.createMap().apply { 
                         putDouble("position", pos / 1000.0) 
                     }
+                    justSeeked = true
+                    currentPositionMs = pos
+                    updatePlaybackStateWithPosition(pos) 
                     sendEvent("onSeek", params)
                 }
             })
@@ -150,13 +156,32 @@ class MediaSessionModule(reactContext: ReactApplicationContext) :
         sendEvent("onPrevious", null)
     }
 
+    @ReactMethod
+    fun updatePosition(position: Double, promise: Promise) {
+        try {
+            currentPositionMs = (position * 1000).toLong()
+            updatePlaybackStateWithPosition(currentPositionMs)
+            promise.resolve(null)
+        } catch (e: Exception) {
+            promise.reject("ERROR", e.message)
+        }
+    }
+
     fun updatePlaybackState(isPlaying: Boolean) {
         currentIsPlaying = isPlaying
-        val state = if (isPlaying) PlaybackStateCompat.STATE_PLAYING
-                    else PlaybackStateCompat.STATE_PAUSED
+
+        val state = if (isPlaying)
+            PlaybackStateCompat.STATE_PLAYING
+        else
+            PlaybackStateCompat.STATE_PAUSED
 
         val playbackState = PlaybackStateCompat.Builder()
-            .setState(state, 0, 1f)
+            .setState(
+                state,
+                currentPositionMs, // pos actual
+                if (isPlaying) 1f else 0f,
+                SystemClock.elapsedRealtime()
+            )
             .setActions(
                 PlaybackStateCompat.ACTION_PLAY or
                 PlaybackStateCompat.ACTION_PAUSE or
@@ -170,6 +195,28 @@ class MediaSessionModule(reactContext: ReactApplicationContext) :
         showNotification(isPlaying)
     }
 
+    private fun updatePlaybackStateWithPosition(posMs: Long) {
+        currentPositionMs = posMs
+
+        val state = if (currentIsPlaying)
+            PlaybackStateCompat.STATE_PLAYING
+        else
+            PlaybackStateCompat.STATE_PAUSED
+
+        val playbackState = PlaybackStateCompat.Builder()
+            .setState(state, currentPositionMs, if (currentIsPlaying) 1f else 0f, SystemClock.elapsedRealtime()) 
+            .setActions(
+                PlaybackStateCompat.ACTION_PLAY or
+                PlaybackStateCompat.ACTION_PAUSE or
+                PlaybackStateCompat.ACTION_SKIP_TO_NEXT or
+                PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS or
+                PlaybackStateCompat.ACTION_SEEK_TO
+            )
+            .build()
+
+        mediaSession?.setPlaybackState(playbackState)
+    }
+
     fun sendEvent(name: String, params: WritableMap?) {
         reactApplicationContext
             .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
@@ -181,6 +228,8 @@ class MediaSessionModule(reactContext: ReactApplicationContext) :
         try {
             ensureMediaSession()
             isLoading = true
+            currentPositionMs = 0 
+            justSeeked = false 
             val metadata = MediaMetadataCompat.Builder()
                 .putString(MediaMetadataCompat.METADATA_KEY_TITLE, "Cargando...")
                 .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, " ")
@@ -245,9 +294,14 @@ class MediaSessionModule(reactContext: ReactApplicationContext) :
         }.start()
     }
     @ReactMethod
-    fun updateState(isPlaying: Boolean, position: Double, promise: Promise) {
+    fun updateState(isPlaying: Boolean, promise: Promise) {
         try {
             ensureMediaSession()
+            if (justSeeked) {
+                justSeeked = false
+                promise.resolve(null)
+                return 
+            }
             updatePlaybackState(isPlaying)
             promise.resolve(null)
         } catch (e: Exception) {

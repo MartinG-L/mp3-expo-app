@@ -20,7 +20,7 @@ const PlayerFinishHandler = ({ player, stateRepeat, setstateRepeat, next }: any)
   // Con esto obtenemos actualizacion visual del icono play/pause en la barra de notificaciones y lock screen
    useEffect(() => {
     if (fetchingNewMediaUrl) return;
-    MediaSessionModule.updateState(status.playing, 0)
+    MediaSessionModule.updateState(status.playing)
       .catch((e: any) => console.error("updateState error:", e));
   }, [status.playing, fetchingNewMediaUrl]);
 
