@@ -26,6 +26,7 @@ class MediaSessionModule(reactContext: ReactApplicationContext) :
     private var mediaSession: MediaSessionCompat? = null
     private var notificationManager: NotificationManager? = null
     var currentIsPlaying: Boolean = false
+    var isLoading: Boolean = false
 
     // singleton para que MediaButtonReceiver pueda acceder
     companion object {
@@ -89,7 +90,16 @@ class MediaSessionModule(reactContext: ReactApplicationContext) :
 
     fun buildNotification(isPlaying: Boolean): android.app.Notification {
         val token = mediaSession?.sessionToken!!
+        val openAppIntent = reactApplicationContext.packageManager
+            .getLaunchIntentForPackage(reactApplicationContext.packageName)
+        val openAppPendingIntent = PendingIntent.getActivity(
+            reactApplicationContext,
+            0,
+            openAppIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
         return NotificationCompat.Builder(reactApplicationContext, CHANNEL_ID)
+            .setContentIntent(openAppPendingIntent)
             .setSmallIcon(android.R.drawable.ic_media_play)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setPriority(NotificationCompat.PRIORITY_MAX)
@@ -167,6 +177,23 @@ class MediaSessionModule(reactContext: ReactApplicationContext) :
     }
 
     @ReactMethod
+    fun showLoading(promise: Promise) {
+        try {
+            ensureMediaSession()
+            isLoading = true
+            val metadata = MediaMetadataCompat.Builder()
+                .putString(MediaMetadataCompat.METADATA_KEY_TITLE, "Cargando...")
+                .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, " ")
+                .build()
+            mediaSession?.setMetadata(metadata)
+            updatePlaybackState(false)
+            promise.resolve(null)
+        } catch (e: Exception) {
+            promise.reject("ERROR", e.message)
+        }
+    }
+
+    @ReactMethod
     fun updateMetadata(title: String, thumbnail: String, duration: Double, promise: Promise) {
 
         Thread {
@@ -192,6 +219,7 @@ class MediaSessionModule(reactContext: ReactApplicationContext) :
 
                         val metadata = MediaMetadataCompat.Builder()
                             .putString(MediaMetadataCompat.METADATA_KEY_TITLE, title)
+                            .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, " ") 
                             .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, (duration * 1000).toLong())
                             .apply {
                                 bitmap?.let {
@@ -202,6 +230,7 @@ class MediaSessionModule(reactContext: ReactApplicationContext) :
                             .build()
 
                         mediaSession?.setMetadata(metadata)
+                        isLoading = false
                         showNotification(currentIsPlaying)
                         promise.resolve(null)
 
@@ -228,26 +257,46 @@ class MediaSessionModule(reactContext: ReactApplicationContext) :
 
     private fun showNotification(isPlaying: Boolean) {
         val token = mediaSession?.sessionToken ?: return
+
+        val openAppIntent = reactApplicationContext.packageManager
+            .getLaunchIntentForPackage(reactApplicationContext.packageName)
+
+        val openAppPendingIntent = PendingIntent.getActivity(
+            reactApplicationContext,
+            0,
+            openAppIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
         val notification = NotificationCompat.Builder(reactApplicationContext, CHANNEL_ID)
-            .setSmallIcon(android.R.drawable.ic_media_play)
+            .setContentIntent(openAppPendingIntent)
+            .setSmallIcon(
+                if (isLoading) android.R.drawable.ic_popup_sync
+                else android.R.drawable.ic_media_play
+            ) 
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-            .setPriority(NotificationCompat.PRIORITY_LOW)
             .setOnlyAlertOnce(true)
             .setStyle(
                 MediaStyle()
                     .setMediaSession(token)
                     .setShowActionsInCompactView(0, 1, 2)
             )
-            .addAction(android.R.drawable.ic_media_previous, "Anterior",
-                createPendingIntent("PREVIOUS"))
+            .addAction(
+                android.R.drawable.ic_media_previous,
+                "Anterior",
+                createPendingIntent("PREVIOUS")
+            )
             .addAction(
                 if (isPlaying) android.R.drawable.ic_media_pause
                 else android.R.drawable.ic_media_play,
                 if (isPlaying) "Pausar" else "Reproducir",
                 createPendingIntent("PLAY_PAUSE")
             )
-            .addAction(android.R.drawable.ic_media_next, "Siguiente",
-                createPendingIntent("NEXT"))
+            .addAction(
+                android.R.drawable.ic_media_next,
+                "Siguiente",
+                createPendingIntent("NEXT")
+            )
             .build()
 
         notificationManager?.notify(NOTIFICATION_ID, notification)

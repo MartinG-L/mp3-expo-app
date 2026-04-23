@@ -120,6 +120,7 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     if (!audioReadyRef.current) return;
     let finalSong = song;
     updateAudioState({ fetchingNewMediaUrl: true });
+    await MediaSessionModule.showLoading();
     try {
       if (!song.videoId) {
         const searchSong = await axiosInstance.get("/api/audio/search?searchSong=" + encodeURIComponent(song.title) + "&fromSearchPrecise=true");
