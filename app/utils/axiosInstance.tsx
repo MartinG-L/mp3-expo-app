@@ -25,18 +25,20 @@ axiosInstance.interceptors.request.use(
 );
 
 axiosInstance.interceptors.response.use(
-  (response) => response, 
+  (response) => response,
   async (error) => {
-    if (error.response?.status === 401 || error.response?.status === 403) {
-        const logout = getLogout();
-        logout && logout();
-        router.replace("/auth/login");
-        showSessionExpired("Sesión expirada. Por favor, inicia sesión nuevamente.");
-        return Promise.resolve({ data: null, status: 401 });
-      }
+    const isAuthRoute = error.config?.url?.includes("/login") 
 
-      return Promise.reject(error);
+    if ((error.response?.status === 401 || error.response?.status === 403) && !isAuthRoute) {
+      const logout = getLogout();
+      logout && logout();
+      router.replace("/auth/login");
+      showSessionExpired("Sesión expirada. Por favor, inicia sesión nuevamente.");
+      return Promise.resolve({ data: null, status: 401 });
     }
+
+    return Promise.reject(error);
+  }
 );
 
 export default axiosInstance;
