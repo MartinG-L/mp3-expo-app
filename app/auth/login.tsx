@@ -66,10 +66,6 @@ export default function Login() {
 
         const FullPlaylist = await Promise.all(
           reqPlaylists.data.map(async (playlist: any) => {
-            const reqSongs = await axiosInstance.get(
-              `/api/albums/${playlist.id}/songs`
-            );
-
             return {
               id: playlist.id,
               name: playlist.name,
@@ -77,18 +73,12 @@ export default function Login() {
               urlThumbnail: playlist.thumbnail,
               created_at: playlist.createdAt,
               is_default: playlist.isDefault,
-              songs: reqSongs.data.map((song: any) => {
-                return {
-                  id: song.id,
-                  title: song.title,
-                  videoId: song.videoId,
-                  urlThumbnail: song.thumbnail,
-                  duration: song.duration,
-                };
-              }),
+              songCount: playlist.songCount,
+              songs: [],
             };
           })
         );
+        console.log(FullPlaylist);
         setListUserPlaylist(FullPlaylist);
         await AsyncStorage.removeItem("listUserPlaylist");
         await AsyncStorage.setItem(

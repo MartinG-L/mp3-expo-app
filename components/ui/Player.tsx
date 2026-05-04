@@ -97,26 +97,28 @@ export default function Player() {
         urlThumbnail: req.data.thumbnail,
         duration: req.data.duration,
       };
-      setListUserPlaylist(prev =>
+      setListUserPlaylist(prev => 
         prev.map(playlist => {
           const shouldHaveSong = albumIds.includes(playlist.id);
           const hasSong = playlist.songs.some(
             s => s.videoId === savedSong.videoId
           );
 
+          // Si la playlist debería tener la canción pero no la tiene, la agregamos
           if (shouldHaveSong && !hasSong) {
             return {
               ...playlist,
               songs: [savedSong, ...playlist.songs],
+              songCount: playlist.songCount + 1,
             };
           }
 
+          // Si la playlist no debería tener la canción pero la tiene, la removemos
           if (!shouldHaveSong && hasSong) {
             return {
               ...playlist,
-              songs: playlist.songs.filter(
-                s => s.videoId !== savedSong.videoId
-              ),
+              songs: playlist.songs.filter(s => s.videoId !== savedSong.videoId),
+              songCount: playlist.songCount - 1,
             };
           }
 

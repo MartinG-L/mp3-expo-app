@@ -8,6 +8,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
 import { ScrollView, TouchableOpacity, View } from 'react-native';
+import axiosInstance from '../utils/axiosInstance';
 
 
 export default function HomeScreen() {
@@ -17,8 +18,8 @@ export default function HomeScreen() {
     description: String;
     thumbnail: String;
     createdAt: number;
+    songCount: number;
     isDefault: boolean;
-    songs: Song[];
   }
 
   interface Song {
@@ -36,6 +37,7 @@ export default function HomeScreen() {
     thumbnail: String;
     created_at: number;
     is_default: boolean;
+    songCount: number;
     songs: Song[];
   }
 
@@ -83,6 +85,7 @@ export default function HomeScreen() {
           thumbnail: updatedPlaylist.thumbnail,
           created_at: updatedPlaylist.created_at,
           is_default: updatedPlaylist.is_default,
+          songCount: updatedPlaylist.songCount,
           songs: updatedPlaylist.songs
         });
       }
@@ -96,14 +99,35 @@ export default function HomeScreen() {
     // Info para el modal crear
     settitlePlaylist(playlist.name.toString())
     setDescriptionPlaylist(playlist.description.toString());
+
+    // Si ya tiene canciones cargadas, no llamamos al backend 
+    if (playlist.songs && playlist.songs.length > 0) {
+      setplayListData({
+        ...playlist,
+        created_at: playlist.createdAt ?? playlist.created_at,
+        is_default: playlist.isDefault ?? playlist.is_default,
+      });
+      setLoadingSongsPlaylist(false);
+      return;
+    }
+
     try { 
-      const playlistSongs = playlist.songs.map((song: any) => ({
+      const reqSongs = await axiosInstance.get(
+        `/api/albums/${playlist.id}/songs`
+      );
+      const playlistSongs = reqSongs.data.map((song: any) => ({
         id: song.id,
         title: song.title,
         videoId: song.videoId,
-        urlThumbnail: song.urlThumbnail,
+        urlThumbnail: song.thumbnail,
         duration: song.duration,
       }));
+
+      // Actualizamos la playlist que ya tenemos en el estado global con las canciones obtenidas async storage
+      setListUserPlaylist(prev => 
+        prev.map(p => p.id === playlist.id ? { ...p, songs: playlistSongs } : p)
+      );
+
       setplayListData({
         id: playlist.id,
         name: playlist.name,
@@ -111,6 +135,7 @@ export default function HomeScreen() {
         thumbnail: playlist.thumbnail,
         created_at: playlist.createdAt,
         is_default: playlist.isDefault,
+        songCount: playlist.songCount,
         songs: playlistSongs || []
       });
     } catch (e: any) {
@@ -166,10 +191,27 @@ export default function HomeScreen() {
               alignItems: "center",
               marginBottom: 12
             }} onPress={()=>handlePlaylistModal(playlist)}>
-              <View style={{backgroundColor: "gray", width: 70, height: 70, marginRight: 10}}></View>
+              <View style={{ backgroundColor: "gray", width: 70, height: 70, marginRight: 10 }}>
+                <View style={{
+                  position: "absolute",
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  backgroundColor: "rgba(0,0,0,0.6)",
+                  flexDirection: "row",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  paddingVertical: 2,
+                }}>
+                  <Text style={{ color: "white", fontSize: 11, fontWeight: "bold" }}>{playlist.songCount}</Text>
+                  <MaterialIcons name="music-note" size={11} color="white" />
+                </View>
+              </View>
               <View style={{display: "flex", flexDirection: "column", gap: 5}}>
                 <Text style={{color:"white", fontWeight: "bold", fontSize: 17}}>{playlist.name}</Text>
-                <Text style={{color:"white", fontSize: 12}}>{playlist.description}</Text>
+                {playlist.description ? (
+                    <Text style={{color:"white", fontSize: 12}}>{playlist.description}</Text>
+                ) : null}
               </View>
             </TouchableOpacity>
           ))}
@@ -179,6 +221,7 @@ export default function HomeScreen() {
       {/* Modal playlist */}
       {ModalPlaylistVisible && 
         (<ModalPlaylists
+          setplayListData={setplayListData}
           playListData={playListData}
           setModalPlaylistVisible={setModalPlaylistVisible}
           setLoadingSongsPLaylist={setLoadingSongsPlaylist}

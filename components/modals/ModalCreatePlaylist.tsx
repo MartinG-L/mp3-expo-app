@@ -106,6 +106,7 @@ export default function ModalCreatePlaylist({
           description: req.data.description,
           thumbnail: req.data.thumbnail ?? "",
           created_at: Date.now(),
+          songCount: 0,
           is_default: false,
           songs: []
         };
@@ -146,7 +147,7 @@ export default function ModalCreatePlaylist({
         setListUserPlaylist(prev => {
           const updated = prev.map(p =>
             p.id === playListData.id
-              ? { ...p, ...updatedData }
+              ? { ...p, name: updatedData.name, description: updatedData.description }
               : p
           );
 

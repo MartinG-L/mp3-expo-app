@@ -25,11 +25,13 @@ interface PlayListData {
   thumbnail: String;
   created_at: number;
   is_default: boolean;
+  songCount: number;
   songs: Song[]
 }
 
 interface ModalPlaylistsProps {
   playListData: PlayListData | null;
+  setplayListData: React.Dispatch<React.SetStateAction<PlayListData | null>>;
   setModalPlaylistVisible: (visible: boolean) => void;
   setLoadingSongsPLaylist: (loading: boolean) => void;
   LoadingSongsPLaylist: boolean;
@@ -41,6 +43,7 @@ interface ModalPlaylistsProps {
 
 export default function ModalPlaylists({
   playListData,
+  setplayListData,
   setModalPlaylistVisible,
   LoadingSongsPLaylist,
   isDefault,
@@ -96,6 +99,7 @@ export default function ModalPlaylists({
     
           <View style={{display: "flex", flexDirection: "row", position: "relative", alignItems:"center"}}>
             <TouchableOpacity onPress={() => {
+              setplayListData(null);  
               setModalPlaylistVisible(false)
               setIsEditing(false);
             }} style={{paddingVertical: 3, paddingHorizontal: 10}}>

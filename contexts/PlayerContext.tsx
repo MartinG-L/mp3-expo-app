@@ -45,6 +45,7 @@ interface PlaylistsUser {
   thumbnail: String;
   created_at: number;
   is_default: boolean;
+  songCount: number;
   songs: SongData[];
 }
 
