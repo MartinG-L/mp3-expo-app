@@ -1,6 +1,7 @@
 import axiosInstance from '@/app/utils/axiosInstance';
 import { useAudioState } from '@/contexts/AudioStateContext';
 import { useAudio } from '@/contexts/PlayerContext';
+import { showError, showSuccess } from '@/lib/toast';
 import { MaterialIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as PopoverPrimitive from '@rn-primitives/popover';
@@ -8,6 +9,7 @@ import { useState } from "react";
 import { ActivityIndicator, FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { PopoverContent, PopoverTrigger } from '../ui/popover';
 import ModalConfirmDelete from './ModalConfirmDelete';
+import ModalSongOptions from './ModalSongOptions';
 
 
 interface Song {
@@ -54,6 +56,8 @@ export default function ModalPlaylists({
     const {queueAndPlay, setListUserPlaylist} = useAudio();
     const {currentSongData} = useAudioState();
     const [showConfirmDelete, setshowConfirmDelete] = useState(false);
+    const [selectedSong, setSelectedSong] = useState<Song | null>(null);
+    const [showSongOptions, setShowSongOptions] = useState(false);
 
     const deletePlaylist = async (playlistId: number)=>{
       if(playListData?.is_default) return;
@@ -76,6 +80,24 @@ export default function ModalPlaylists({
       }
     }
     
+    const deleteSongFromPlaylist = async (songId: number) => {
+      try {
+        await axiosInstance.delete(`/api/albums/${playListData?.id}/songs/${songId}`);
+        setListUserPlaylist(prev => {
+          const updated = prev.map(p =>
+            p.id === playListData?.id
+              ? { ...p, songs: p.songs.filter(s => s.id !== songId), songCount: p.songCount - 1 }
+              : p
+          );
+          AsyncStorage.setItem("listUserPlaylist", JSON.stringify(updated));
+          return updated;
+        });
+        showSuccess("Canción eliminada de la playlist");
+      } catch (error) {
+        showError("Error al eliminar la canción");
+        console.log(error);
+      }
+    };
 
     return(
       <View style={{ position: "absolute",
@@ -174,6 +196,18 @@ export default function ModalPlaylists({
           {/* FIN POPOVER OPTIONS */}
           
         </View>
+        
+        {/* Modal Option Song */}
+        <ModalSongOptions
+          visible={showSongOptions}
+          song={selectedSong}
+          onClose={() => setShowSongOptions(false)}
+          onDelete={(song) => {
+            deleteSongFromPlaylist(song.id);
+          }}
+          onSetThumbnail={(song) => {
+          }}
+        />
 
         {/* Contenido */}
         <FlatList
@@ -189,6 +223,10 @@ export default function ModalPlaylists({
           renderItem={({ item: music, index }) => (
             <TouchableOpacity
               onPress={() => queueAndPlay(playListData?.songs ?? [], index)}
+              onLongPress={()=>{
+                setSelectedSong(music);
+                setShowSongOptions(true);
+              }}
               style={{
                 display: "flex",
                 flex: 1,
