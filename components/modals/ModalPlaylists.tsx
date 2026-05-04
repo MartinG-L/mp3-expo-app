@@ -5,7 +5,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as PopoverPrimitive from '@rn-primitives/popover';
 import { useState } from "react";
-import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { PopoverContent, PopoverTrigger } from '../ui/popover';
 import ModalConfirmDelete from './ModalConfirmDelete';
 
@@ -172,30 +172,32 @@ export default function ModalPlaylists({
         </View>
 
         {/* Contenido */}
-        <ScrollView style={{paddingHorizontal: 5, flex: 1, width: "100%", marginTop: 15}}>
-          {LoadingSongsPLaylist ? (
-            <View>
-                <ActivityIndicator style={{marginTop: 120}} size="large" color="#2fa0d4ff" />
-            </View>
-          ) : (
-          <View style={{ width: "100%"}}>
-            {playListData?.songs.map((music, index) => (
-              <TouchableOpacity
-                key={music.videoId}
-                onPress={() => queueAndPlay(playListData.songs, index)}
-                style={{
-                    display: "flex",
-                    flex: 1,
-                    flexDirection: "row",
-                    marginVertical: 5, 
-                    alignItems: 'center',
-                    paddingVertical: 10,
-                    paddingHorizontal: 7,
-                    backgroundColor: "#111",
-                    borderRadius: 5,
-                    width: "100%",
-                }}
-              > 
+        <FlatList
+          data={playListData?.songs ?? []}
+          keyExtractor={(item) => item.videoId}
+          style={{ paddingHorizontal: 5, flex: 1, width: "100%", marginTop: 15 }}
+          contentContainerStyle={{ width: "100%" }}
+          ListEmptyComponent={
+            LoadingSongsPLaylist ? (
+              <ActivityIndicator style={{ marginTop: 120 }} size="large" color="#2fa0d4ff" />
+            ) : null
+          }
+          renderItem={({ item: music, index }) => (
+            <TouchableOpacity
+              onPress={() => queueAndPlay(playListData?.songs ?? [], index)}
+              style={{
+                display: "flex",
+                flex: 1,
+                flexDirection: "row",
+                marginVertical: 5,
+                alignItems: "center",
+                paddingVertical: 10,
+                paddingHorizontal: 7,
+                backgroundColor: "#111",
+                borderRadius: 5,
+                width: "100%",
+              }}
+            >
               {currentSongData?.title === music.title && (
                 <View
                   pointerEvents="none"
@@ -209,20 +211,18 @@ export default function ModalPlaylists({
                     borderColor: "#FFD700",
                     borderRadius: 2,
                   }}
-                />  
-              )}
-                <Image 
-                  source={{ uri: music.urlThumbnail }} 
-                  style={{ width: 70, height: 60, borderRadius: 5, marginRight: 10 }} 
                 />
-                <View style={{flex: 1}}>
-                  <Text style={{color:"white"}}>{music.title}</Text>    
-                </View>
+              )}
+              <Image
+                source={{ uri: music.urlThumbnail }}
+                style={{ width: 70, height: 60, borderRadius: 5, marginRight: 10 }}
+              />
+              <View style={{ flex: 1 }}>
+                <Text style={{ color: "white" }}>{music.title}</Text>
+              </View>
             </TouchableOpacity>
-            ))}
-          </View>
           )}
-        </ScrollView>
+        />
 
       </View>
     )
