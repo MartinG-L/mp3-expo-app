@@ -4,11 +4,10 @@ import { useAudio } from '@/contexts/PlayerContext';
 import { showError, showSuccess } from '@/lib/toast';
 import { MaterialIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as PopoverPrimitive from '@rn-primitives/popover';
 import { useState } from "react";
 import { ActivityIndicator, FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { PopoverContent, PopoverTrigger } from '../ui/popover';
 import ModalConfirmDelete from './ModalConfirmDelete';
+import ModalPlaylistOptions from './ModalPlaylistOptions';
 import ModalSongOptions from './ModalSongOptions';
 
 
@@ -58,6 +57,8 @@ export default function ModalPlaylists({
     const [showConfirmDelete, setshowConfirmDelete] = useState(false);
     const [selectedSong, setSelectedSong] = useState<Song | null>(null);
     const [showSongOptions, setShowSongOptions] = useState(false);
+    const [showPlaylistOptions, setShowPlaylistOptions] = useState(false);
+    const [headerHeight, setHeaderHeight] = useState(0);
 
     const deletePlaylist = async (playlistId: number)=>{
       if(playListData?.is_default) return;
@@ -100,7 +101,8 @@ export default function ModalPlaylists({
     };
 
     return(
-      <View style={{ position: "absolute",
+      <View 
+      style={{ position: "absolute",
         top: 0,
         left: 0,
         right: 0,
@@ -130,72 +132,29 @@ export default function ModalPlaylists({
             <Text style={styles.headerTitle}>{playListData?.name}</Text>
           </View>
 
-          {/* POPOVER OPTIONS */}
-          {isDefault ? null : 
-          <PopoverPrimitive.Root>
-
-            <PopoverTrigger asChild>
-              <TouchableOpacity style={{paddingVertical: 3, paddingHorizontal: 20}}>
-                <MaterialIcons name="more-vert" size={20} color="white" />
-              </TouchableOpacity>
-            </PopoverTrigger>
-            
-            
-            <PopoverContent
-              side="bottom"
-              sideOffset={10}
-              align="end"
-              alignOffset={15}
-              style={{
-                backgroundColor: "#111",
-                flexDirection: "column",
-                overflow: "hidden", 
-                borderWidth: 1,
-                borderColor: "#222",
-                paddingHorizontal: 10,
-              }}>
-                {/* Botones */}
-                <PopoverPrimitive.Close asChild>
-                  <TouchableOpacity 
-                  style={{
-                    paddingVertical: 8,
-                    paddingHorizontal: 7,
-                    display:"flex",
-                    flexDirection: "row",
-                    justifyContent: "space-around",
-                    borderBottomColor: "#333",
-                    borderBottomWidth: 1,
-                    alignItems: "center",
-                  }} onPress={()=>{
-                      setIsEditing(true);
-                      setModalCreatePlaylistVisible(true);  
-                    }}>
-                    <Text style={{color:"white", fontWeight:"light", fontSize: 12}}>Editar</Text>
-                    <MaterialIcons name="edit" size={18} color="#969696ff" />
-                  </TouchableOpacity>
-                </PopoverPrimitive.Close>
-
-                <PopoverPrimitive.Close asChild>
-                  <TouchableOpacity 
-                  style={{
-                    paddingVertical: 8,
-                    paddingHorizontal: 7,
-                    display:"flex",
-                    flexDirection: "row",
-                    justifyContent: "space-around",
-                    alignItems: "center",
-                  }} onPress={()=>setshowConfirmDelete(true)}>
-                    <Text style={{color:"white", fontWeight:"light", fontSize: 12}}>Eliminar</Text>
-                    <MaterialIcons name="delete" size={18} color="#a83737ff" />
-                  </TouchableOpacity>
-                </PopoverPrimitive.Close>
-                {/* FIN BOTONES */}
-              </PopoverContent>
-
-          </PopoverPrimitive.Root>}
-          {/* FIN POPOVER OPTIONS */}
+          {isDefault ? null : (
+            <TouchableOpacity
+              style={{ paddingVertical: 3, paddingHorizontal: 20 }}
+              onPress={() => setShowPlaylistOptions(true)}
+            >
+              <MaterialIcons name="more-vert" size={20} color="white" />
+            </TouchableOpacity>
+          )}
           
         </View>
+
+        {/* PLAYLIST OPTIONS */}
+        <ModalPlaylistOptions
+          headerHeight={headerHeight}
+          visible={showPlaylistOptions}
+          onClose={() => setShowPlaylistOptions(false)}
+          onEdit={() => {
+            setIsEditing(true);
+            setModalCreatePlaylistVisible(true);
+          }}
+          onDelete={() => setshowConfirmDelete(true)}
+        />
+        {/* FIN PLAYLIST OPTIONS */}
         
         {/* Modal Option Song */}
         <ModalSongOptions

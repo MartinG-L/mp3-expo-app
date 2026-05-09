@@ -33,7 +33,6 @@ export const showSessionExpired = (message: string) => {
     toast(message, {
       dismissible: true,
       style: {
-        alignSelf: "center",
         backgroundColor: "#18181b",
         borderWidth: 1,
         borderColor: "#27272a",
