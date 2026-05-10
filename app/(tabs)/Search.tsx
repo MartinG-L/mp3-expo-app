@@ -1,14 +1,15 @@
 import ModalPreciseSearchSongs from "@/components/modals/ModalPreciseSearchSongs";
 import { useAudioState } from "@/contexts/AudioStateContext";
 import { useAudio } from "@/contexts/PlayerContext";
+import { MaterialIcons } from "@expo/vector-icons";
 import { Stack } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
   Image,
-  Pressable,
   StyleSheet,
+  Switch,
   Text,
   TextInput,
   TouchableOpacity,
@@ -130,35 +131,55 @@ export default function Search() {
       }}
     >
       <Stack.Screen options={{ title: "Buscar" }} />
-      <TextInput
-        placeholder="Busca una cancion.."
-        value={searchSong}
-        onChangeText={setSearchSong}
-        placeholderTextColor="rgba(255, 255, 255, 0.3)"
-        onSubmitEditing={fetchMusic}
-        returnKeyType="search"
+      <View
         style={{
+          flexDirection: "row",
+          alignItems: "center",
           borderWidth: 1,
           borderColor: "gray",
-          padding: 10,
+          borderRadius: 5,
+          paddingHorizontal: 10,
           marginTop: 15,
           marginBottom: 10,
-          borderRadius: 5,
           width: "99%",
-          color: "white",
         }}
-      />
-      <Pressable
-        onPress={() => setPrecise((prev) => !prev)}
-        style={[styles.toggleButton, precise && styles.toggleButtonActive]}
       >
-        <Text
-          selectable={false}
-          style={[styles.toggleText, precise && styles.toggleTextActive]}
-        >
-          {precise ? "Busqueda precisa ✓" : "Busqueda precisa por artista"}
+        <MaterialIcons name="search" size={20} color="rgba(255,255,255,0.3)" />
+        <TextInput
+          placeholder={
+            precise ? "Buscar por artista..." : "Buscar canción o artista..."
+          }
+          value={searchSong}
+          onChangeText={setSearchSong}
+          placeholderTextColor="rgba(255, 255, 255, 0.3)"
+          onSubmitEditing={fetchMusic}
+          returnKeyType="search"
+          style={{
+            flex: 1,
+            padding: 12,
+            color: "white",
+          }}
+        />
+      </View>
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          paddingHorizontal: 10,
+          width: "99%",
+        }}
+      >
+        <Text style={{ color: "#999", fontSize: 13 }}>
+          Búsqueda precisa por artista
         </Text>
-      </Pressable>
+        <Switch
+          value={precise}
+          onValueChange={(value) => setPrecise(value)}
+          trackColor={{ false: "#333", true: "#FFD700" }}
+          thumbColor="#fff"
+        />
+      </View>
 
       <View style={{ flex: 1, width: "100%" }}>
         {isLoading ? (
@@ -173,6 +194,7 @@ export default function Search() {
             keyExtractor={(item) => item.id.toString()}
             contentContainerStyle={{
               paddingHorizontal: 5,
+              paddingVertical: 10,
             }}
             renderItem={({ item: artist }) => (
               <TouchableOpacity
@@ -190,7 +212,9 @@ export default function Search() {
                 }}
               >
                 <View style={{ flex: 1 }}>
-                  <Text style={{ color: "white" }}>{artist.name}</Text>
+                  <Text style={{ color: "white", fontSize: 14 }}>
+                    {artist.name}
+                  </Text>
                 </View>
               </TouchableOpacity>
             )}
@@ -246,7 +270,9 @@ export default function Search() {
                   }}
                 />
                 <View style={{ flex: 1 }}>
-                  <Text style={{ color: "white" }}>{music.title}</Text>
+                  <Text style={{ color: "white", fontSize: 14 }}>
+                    {music.title}
+                  </Text>
                 </View>
               </TouchableOpacity>
             )}
