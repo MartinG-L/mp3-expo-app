@@ -33,7 +33,11 @@ interface Artist {
 
 const artistSongsCache = new Map<
   string,
-  { data: videoResult[]; timestamp: number }
+  {
+    data: videoResult[];
+    thumbnail: string;
+    timestamp: number;
+  }
 >();
 const CACHE_TTL = 30 * 60 * 1000;
 
@@ -47,6 +51,7 @@ export default function Search() {
   const { currentSongData } = useAudioState();
   const [precise, setPrecise] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [artistThumbnail, setArtistThumbnail] = useState("");
   const [selectedArtist, setSelectedArtist] = useState<Artist | null>(null);
 
   useEffect(() => {
@@ -91,28 +96,38 @@ export default function Search() {
 
     if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
       setresultList(cached.data);
+      setArtistThumbnail(cached.thumbnail);
       return;
     }
 
     setIsLoadingSongs(true);
     try {
-      const request = await axiosInstance.get(
-        `/api/audio/search/precise/songsByArtist`,
-        {
-          params: {
-            artistId: artist.id,
-            artistName: artist.name,
-          },
-        },
-      );
+      const [songsResult, thumbnailResult] = await Promise.allSettled([
+        axiosInstance.get(`/api/audio/search/precise/songsByArtist`, {
+          params: { artistId: artist.id, artistName: artist.name },
+        }),
+        axiosInstance.get(`/api/audio/search/precise/artistThumbnail`, {
+          params: { artistName: artist.name },
+        }),
+      ]);
 
-      console.log("Resultados para el artista:", request.data.length);
+      const songs =
+        songsResult.status === "fulfilled" ? songsResult.value.data : [];
+
+      const thumbnail =
+        thumbnailResult.status === "fulfilled"
+          ? thumbnailResult.value.data.urlArtistThumbnail
+          : "";
+      console.log("Thumbnail response:", thumbnailResult);
+      console.log("Resultados para el artista:", songs.length);
+      console.log("Thumbnail del artista:", thumbnail);
       artistSongsCache.set(cacheKey, {
-        data: request.data,
+        data: songs,
+        thumbnail: thumbnail,
         timestamp: Date.now(),
       });
-      console.log(artistSongsCache);
-      setresultList(request.data);
+      setArtistThumbnail(thumbnail);
+      setresultList(songs);
       return;
     } catch (error) {
       console.log(error);
@@ -293,6 +308,7 @@ export default function Search() {
           queueAndPlay={queueAndPlay}
           currentSongData={currentSongData}
           setIsModalVisible={setIsModalVisible}
+          artistThumbnail={artistThumbnail}
         />
       )}
     </View>
