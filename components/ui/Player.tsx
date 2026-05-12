@@ -3,15 +3,14 @@ import { useAudioState } from "@/contexts/AudioStateContext";
 import { playerRef, useAudio } from "@/contexts/PlayerContext";
 import { showError, showSuccess } from "@/lib/toast";
 import { MaterialIcons } from "@expo/vector-icons";
+import * as PopoverPrimitive from "@rn-primitives/popover";
 import * as PortalPrimitive from "@rn-primitives/portal";
 import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Dimensions,
   Image,
-  Modal,
   Platform,
-  Pressable,
   Text,
   TouchableOpacity,
   useWindowDimensions,
@@ -29,6 +28,7 @@ import PlayerFinishHandler from "../Player/PlayerFinishHandler";
 import PlayerSlider from "../Player/PlayerSlider";
 import PlayerTime from "../Player/PlayerTime";
 import PlayPauseButton from "../Player/PlayPauseButton";
+import { PopoverContent, PopoverTrigger } from "../ui/popover";
 import VerticalSlider from "../VerticalSlider";
 
 export default function Player() {
@@ -533,58 +533,49 @@ export default function Player() {
           }}
         >
           {/* Volume Button */}
-          <TouchableOpacity
-            ref={volumeRef}
-            onPress={openVolume}
-            style={{ padding: 5 }}
-          >
-            <MaterialIcons
-              name={
-                player.muted || Volume <= 0.01
-                  ? "volume-off"
-                  : Volume < 0.5
-                    ? "volume-down"
-                    : "volume-up"
-              }
-              size={28}
-              color={modalVolumeVisble ? "#888" : "#dfdfdfff"}
-            />
-          </TouchableOpacity>
-          {modalVolumeVisble && volumePos && (
-            <Modal visible={modalVolumeVisble} transparent animationType="none">
-              <Pressable
-                style={{ flex: 1 }}
-                onPress={() => setModalVolumeVisble(false)}
-              >
-                <View
-                  style={{
-                    position: "absolute",
-                    backgroundColor: "#222",
-                    left: volumePos.x + volumePos.w / 2 - 15,
-                    top: volumePos.y - 145,
-                    borderRadius: 5,
-                    borderWidth: 1,
-                    borderColor: "#333",
-                    paddingVertical: 10,
-                  }}
-                >
-                  <VerticalSlider
-                    height={120}
-                    min={0}
-                    max={1}
-                    value={Volume}
-                    onChange={(value) => {
-                      setVolume(value);
-                      value <= 0.01
-                        ? (player.muted = true)
-                        : (player.muted = false);
-                      player.volume = value;
-                    }}
-                  />
-                </View>
-              </Pressable>
-            </Modal>
-          )}
+          <PopoverPrimitive.Root>
+            <PopoverTrigger asChild>
+              <TouchableOpacity style={{ padding: 5 }}>
+                <MaterialIcons
+                  name={
+                    player.muted || Volume <= 0.01
+                      ? "volume-off"
+                      : Volume < 0.5
+                        ? "volume-down"
+                        : "volume-up"
+                  }
+                  size={28}
+                  color="#dfdfdfff"
+                />
+              </TouchableOpacity>
+            </PopoverTrigger>
+
+            <PopoverContent
+              side="top"
+              sideOffset={10}
+              style={{
+                backgroundColor: "#222",
+                borderWidth: 1,
+                borderColor: "#333",
+                borderRadius: 5,
+                paddingVertical: 10,
+              }}
+            >
+              <VerticalSlider
+                height={120}
+                min={0}
+                max={1}
+                value={Volume}
+                onChange={(value) => {
+                  setVolume(value);
+                  value <= 0.01
+                    ? (player.muted = true)
+                    : (player.muted = false);
+                  player.volume = value;
+                }}
+              />
+            </PopoverContent>
+          </PopoverPrimitive.Root>
 
           <TouchableOpacity
             style={{ padding: 5 }}
