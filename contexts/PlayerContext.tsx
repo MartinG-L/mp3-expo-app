@@ -1,22 +1,30 @@
 // AudioContext.tsx
 import axiosInstance from "@/app/utils/axiosInstance";
 import { AudioPlayer, setAudioModeAsync, useAudioPlayer } from "expo-audio";
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
-import { NativeEventEmitter, NativeModules } from 'react-native';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { NativeEventEmitter, NativeModules } from "react-native";
 import { AudioState, AudioStateContext } from "./AudioStateContext";
 import { useAuth } from "./AuthContext";
 const { NewPipeModule, MediaSessionModule } = NativeModules;
-const mediaSessionEmitter = new NativeEventEmitter(NativeModules.MediaSessionModule);
-
-
+const mediaSessionEmitter = new NativeEventEmitter(
+  NativeModules.MediaSessionModule,
+);
 
 type AudioContextType = {
-  queueAndPlay: (queue: SongData[],  index: number) => void;
+  queueAndPlay: (queue: SongData[], index: number) => void;
   next: () => void;
   prev: () => void;
   togglePlayPause: () => void;
   PlayerHeight: number;
-  setPlayerHeight:  React.Dispatch<React.SetStateAction<number>>;
+  setPlayerHeight: React.Dispatch<React.SetStateAction<number>>;
   setLikedSongs: React.Dispatch<React.SetStateAction<Set<string>>>;
   setQueue: React.Dispatch<React.SetStateAction<SongData[]>>;
   setCurrentIndex: React.Dispatch<React.SetStateAction<number>>;
@@ -26,16 +34,16 @@ type AudioContextType = {
   isLiked: boolean;
   updatePlaylist: boolean;
   setListUserPlaylist: React.Dispatch<React.SetStateAction<PlaylistsUser[]>>;
-  listUserPlaylist: PlaylistsUser[]
+  listUserPlaylist: PlaylistsUser[];
 };
 
 type SongData = {
-  id: number,
-  title: string,
-  videoId: string,
-  urlThumbnail: string
-  duration: number
-  recordingId?: string
+  id: number;
+  title: string;
+  videoId: string;
+  urlThumbnail: string;
+  duration: number;
+  recordingId?: string;
 };
 
 interface PlaylistsUser {
@@ -51,12 +59,13 @@ interface PlaylistsUser {
 
 const AudioContext = createContext<AudioContextType | undefined>(undefined);
 
-
-export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   console.log("🎧 AudioProvider render");
   useEffect(() => {
-  console.log("MediaSessionModule:", NativeModules.MediaSessionModule);
-}, []);
+    console.log("MediaSessionModule:", NativeModules.MediaSessionModule);
+  }, []);
   const player = useAudioPlayer();
   playerRef.current = player;
   const [audioReady, setAudioReady] = useState(false);
@@ -77,7 +86,7 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     fetchingNewMediaUrl: false,
   });
   const updateAudioState = useCallback((data: Partial<AudioState>) => {
-    setAudioState(prev => ({ ...prev, ...data }));
+    setAudioState((prev) => ({ ...prev, ...data }));
   }, []);
 
   const authTokenRef = useRef(token ?? "");
@@ -94,8 +103,8 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       await setAudioModeAsync({
         playsInSilentMode: true,
         shouldPlayInBackground: true,
-        interruptionModeAndroid: 'duckOthers',
-        interruptionMode: 'mixWithOthers',
+        interruptionModeAndroid: "duckOthers",
+        interruptionMode: "mixWithOthers",
       });
       setAudioReady(true);
     };
@@ -106,52 +115,70 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const currentIndexRef = useRef(0);
   const audioReadyRef = useRef(false);
   const currentSongDataRef = useRef<SongData | null>(null);
-  const audioStateValue = useMemo(() => ({
-    ...audioState,
-    setAudioState,
-    updateAudioState,
-  }), [audioState]);
+  const audioStateValue = useMemo(
+    () => ({
+      ...audioState,
+      setAudioState,
+      updateAudioState,
+    }),
+    [audioState],
+  );
 
-  useEffect(() => { queueRef.current = queue; }, [queue]);
-  useEffect(() => { currentIndexRef.current = currentIndex; }, [currentIndex]);
-  useEffect(() => { audioReadyRef.current = audioReady; }, [audioReady]);
-  useEffect(() => { currentSongDataRef.current = audioState.currentSongData; }, [audioState.currentSongData]);
+  useEffect(() => {
+    queueRef.current = queue;
+  }, [queue]);
+  useEffect(() => {
+    currentIndexRef.current = currentIndex;
+  }, [currentIndex]);
+  useEffect(() => {
+    audioReadyRef.current = audioReady;
+  }, [audioReady]);
+  useEffect(() => {
+    currentSongDataRef.current = audioState.currentSongData;
+  }, [audioState.currentSongData]);
 
-  const playCurrentSong = useCallback(async (song: SongData) => {
-    if (!audioReadyRef.current) return;
-    let finalSong = song;
-    updateAudioState({ fetchingNewMediaUrl: true });
-    await MediaSessionModule.showLoading();
-    try {
-      if (!song.videoId) {
-        const searchSong = await axiosInstance.get("/api/audio/search?searchSong=" + encodeURIComponent(song.title) + "&fromSearchPrecise=true");
-        finalSong = {
-          ...song,
-          videoId: searchSong.data[0].videoId,
-          duration: searchSong.data[0].duration,
-          urlThumbnail: searchSong.data[0].urlThumbnail,
-        };
+  const playCurrentSong = useCallback(
+    async (song: SongData) => {
+      if (!audioReadyRef.current) return;
+      let finalSong = song;
+      updateAudioState({ fetchingNewMediaUrl: true });
+      await MediaSessionModule.showLoading();
+      try {
+        if (!song.videoId) {
+          const searchSong = await axiosInstance.get(
+            "/api/audio/search?searchSong=" +
+              encodeURIComponent(song.title) +
+              "&fromSearchPrecise=true",
+          );
+          finalSong = {
+            ...song,
+            videoId: searchSong.data[0].videoId,
+            duration: searchSong.data[0].duration,
+            urlThumbnail: searchSong.data[0].urlThumbnail,
+          };
+        }
+        const mediaUrl = await NewPipeModule.getAudioUrl(finalSong.videoId);
+        setAudioState((prev) => ({
+          ...prev,
+          currentSongData: finalSong,
+          Thumbnail: finalSong.urlThumbnail,
+          Duration: finalSong.duration,
+          fetchingNewMediaUrl: false,
+        }));
+        await MediaSessionModule.updateMetadata(
+          finalSong.title,
+          finalSong.urlThumbnail,
+          finalSong.duration,
+        );
+        player.replace({ uri: mediaUrl });
+        player.play();
+      } catch (error) {
+        console.error("Error al obtener el streamUrl:", error);
+        updateAudioState({ fetchingNewMediaUrl: false });
       }
-      const mediaUrl = await NewPipeModule.getAudioUrl(finalSong.videoId);
-      setAudioState(prev => ({
-        ...prev,
-        currentSongData: finalSong,
-        Thumbnail: finalSong.urlThumbnail,
-        Duration: finalSong.duration,
-        fetchingNewMediaUrl: false,
-      }));
-      await MediaSessionModule.updateMetadata(
-        finalSong.title,
-        finalSong.urlThumbnail,
-        finalSong.duration,
-      );
-      player.replace({ uri: mediaUrl });
-      player.play();
-    } catch (error) {
-      console.error("Error al obtener el streamUrl:", error);
-      updateAudioState({ fetchingNewMediaUrl: false });
-    } 
-  }, [logout]);
+    },
+    [logout],
+  );
 
   useEffect(() => {
     const song = queueRef.current[currentIndex];
@@ -176,35 +203,40 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     });
   }, []);
 
-  const getSongKey = useCallback((song: SongData) =>
-    song.videoId ?? song.recordingId ?? song.title.toLowerCase()
-  , []);
+  const getSongKey = useCallback(
+    (song: SongData) =>
+      song.videoId ?? song.recordingId ?? song.title.toLowerCase(),
+    [],
+  );
 
-  const queueAndPlay = useCallback((newQueue: SongData[], index: number) => {
-    const player = playerRef.current;
-    if (!player) return;
-    
-    const clickedSong = newQueue[index];
-    
-    if (
-      currentSongDataRef.current &&
-      getSongKey(currentSongDataRef.current) === getSongKey(clickedSong)
-    ) {
-      player.playing ? player.pause() : player.play();
-      return;
-    }
+  const queueAndPlay = useCallback(
+    (newQueue: SongData[], index: number) => {
+      const player = playerRef.current;
+      if (!player) return;
 
-    // Actualizar el ref inmediatamente para que el efecto no duplique
-    queueRef.current = newQueue;
+      const clickedSong = newQueue[index];
 
-    setQueue(newQueue);
+      if (
+        currentSongDataRef.current &&
+        getSongKey(currentSongDataRef.current) === getSongKey(clickedSong)
+      ) {
+        player.playing ? player.pause() : player.play();
+        return;
+      }
 
-    if (currentIndexRef.current === index) {
-      playCurrentSong(clickedSong);
-    } else {
-      setCurrentIndex(index);
-    }
-  }, [getSongKey, playCurrentSong]);
+      // Actualizar el ref inmediatamente para que el efecto no duplique
+      queueRef.current = newQueue;
+
+      setQueue(newQueue);
+
+      if (currentIndexRef.current === index) {
+        playCurrentSong(clickedSong);
+      } else {
+        setCurrentIndex(index);
+      }
+    },
+    [getSongKey, playCurrentSong],
+  );
 
   const togglePlayPause = useCallback(() => {
     player.playing ? player.pause() : player.play();
@@ -213,15 +245,18 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // Escucha eventos del lockscreen
   useEffect(() => {
     const subs = [
-      mediaSessionEmitter.addListener('onNext', next),
-      mediaSessionEmitter.addListener('onPrevious', prev),
-      mediaSessionEmitter.addListener('onPlay', togglePlayPause),
-      mediaSessionEmitter.addListener('onPause', togglePlayPause),
-      mediaSessionEmitter.addListener('onSeek', (data: { position: number }) => {
-        playerRef.current?.seekTo(data.position);
-      }),
+      mediaSessionEmitter.addListener("onNext", next),
+      mediaSessionEmitter.addListener("onPrevious", prev),
+      mediaSessionEmitter.addListener("onPlay", togglePlayPause),
+      mediaSessionEmitter.addListener("onPause", togglePlayPause),
+      mediaSessionEmitter.addListener(
+        "onSeek",
+        (data: { position: number }) => {
+          playerRef.current?.seekTo(data.position);
+        },
+      ),
     ];
-    return () => subs.forEach(s => s.remove());
+    return () => subs.forEach((s) => s.remove());
   }, [next, prev, togglePlayPause]);
 
   // Limpia al cerrar sesion
@@ -229,50 +264,52 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     MediaSessionModule.destroy();
   }, [token]);
 
-  const value = useMemo(() => ({
-    queueAndPlay,
-    next,
-    prev,
-    togglePlayPause,
-    setPlayerHeight,
-    PlayerHeight,
-    isLiked,
-    setLikedSongs,
-    likedSongs,
-    updatePlaylist,
-    setQueue,
-    setCurrentIndex,
-    setTabBarHeight,
-    tabBarHeight,
-    setListUserPlaylist,
-    listUserPlaylist,
-    currentSongDataRef,
-  }), [
-    queueAndPlay,
-    next,
-    prev,
-    togglePlayPause,
-    PlayerHeight,
-    isLiked,
-    likedSongs,
-    updatePlaylist,
-    tabBarHeight,
-    listUserPlaylist,
-    currentSongDataRef,
-  ]);
+  const value = useMemo(
+    () => ({
+      queueAndPlay,
+      next,
+      prev,
+      togglePlayPause,
+      setPlayerHeight,
+      PlayerHeight,
+      isLiked,
+      setLikedSongs,
+      likedSongs,
+      updatePlaylist,
+      setQueue,
+      setCurrentIndex,
+      setTabBarHeight,
+      tabBarHeight,
+      setListUserPlaylist,
+      listUserPlaylist,
+      currentSongDataRef,
+    }),
+    [
+      queueAndPlay,
+      next,
+      prev,
+      togglePlayPause,
+      PlayerHeight,
+      isLiked,
+      likedSongs,
+      updatePlaylist,
+      tabBarHeight,
+      listUserPlaylist,
+      currentSongDataRef,
+    ],
+  );
 
   return (
     <AudioStateContext.Provider value={audioStateValue}>
-      <AudioContext.Provider value={value}>
-        {children}
-      </AudioContext.Provider>
+      <AudioContext.Provider value={value}>{children}</AudioContext.Provider>
     </AudioStateContext.Provider>
   );
 };
 
 export const useAudio = () => {
   const context = useContext(AudioContext);
-  if (!context) throw new Error("useAudio must be used within an AudioProvider");
+  if (!context)
+    throw new Error("useAudio must be used within an AudioProvider");
   return context;
 };
 
