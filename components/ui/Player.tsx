@@ -5,7 +5,7 @@ import { showError, showSuccess } from "@/lib/toast";
 import { MaterialIcons } from "@expo/vector-icons";
 import * as PopoverPrimitive from "@rn-primitives/popover";
 import * as PortalPrimitive from "@rn-primitives/portal";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Dimensions,
@@ -37,22 +37,11 @@ export default function Player() {
     useAudio();
   const { currentSongData, Thumbnail, Duration, fetchingNewMediaUrl } =
     useAudioState();
-  let [newThumbnail, setnewThumbnail] = useState<string | null>(null);
-  let [UpdateCurrentSong, setUpdateCurrentSong] = useState<string | null>(null);
   const { width: screenWidth } = Dimensions.get("window");
   const [Volume, setVolume] = useState(0.5);
-  const [modalVolumeVisble, setModalVolumeVisble] = useState(false);
   const [modalSaveInAlbumVisible, setModalSaveInAlbumVisible] = useState(false);
   const [stateRepeat, setstateRepeat] = useState(0);
   const thumbSize = Math.min(screenWidth * 0.52, 280);
-
-  const volumeRef = useRef<View>(null);
-  const [volumePos, setVolumePos] = useState<{
-    x: number;
-    y: number;
-    w: number;
-    h: number;
-  } | null>(null);
   const { width, height } = useWindowDimensions();
   const [isFullScreen, setIsFullScreen] = useState(false);
   const insets = useSafeAreaInsets();
@@ -178,36 +167,10 @@ export default function Player() {
   // Nos aseguramos de que solo se imprima cuando realmente cambie el thumbnail
   // Esto pasa porque en nuestro context el status se va actualizando cada segundo
   useEffect(() => {
-    modalVolumeVisble && measureVolumeBtn();
-  }, [modalVolumeVisble, width, height]);
-  useEffect(() => {
     if (currentSongData) {
       player.volume = Volume;
     }
   }, [currentSongData]);
-
-  const measureVolumeBtn = () => {
-    volumeRef.current?.measureInWindow((pageX, pageY, w, h) => {
-      setVolumePos({
-        x: pageX,
-        y: pageY,
-        w: w,
-        h: h,
-      });
-    });
-  };
-
-  const openVolume = () => {
-    volumeRef.current?.measureInWindow((pageX, pageY, w, h) => {
-      setVolumePos({
-        x: pageX,
-        y: pageY,
-        w: w,
-        h: h,
-      });
-      setModalVolumeVisble(true);
-    });
-  };
 
   return (
     <View
