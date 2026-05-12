@@ -1,5 +1,6 @@
 // AudioContext.tsx
 import axiosInstance from "@/app/utils/axiosInstance";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { AudioPlayer, setAudioModeAsync, useAudioPlayer } from "expo-audio";
 import React, {
   createContext,
@@ -261,8 +262,24 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({
 
   // Limpia al cerrar sesion
   useEffect(() => {
-    MediaSessionModule.destroy();
+    if (!token) {
+      player?.pause();
+      player?.seekTo(0);
+      MediaSessionModule.destroy();
+      currentSongDataRef.current = null;
+    }
   }, [token]);
+
+  // Carga las playlists del usuario al iniciar la app
+  useEffect(() => {
+    const loadPlaylists = async () => {
+      const playlists = await AsyncStorage.getItem("listUserPlaylist");
+      if (playlists) {
+        setListUserPlaylist(JSON.parse(playlists));
+      }
+    };
+    loadPlaylists();
+  }, []);
 
   const value = useMemo(
     () => ({

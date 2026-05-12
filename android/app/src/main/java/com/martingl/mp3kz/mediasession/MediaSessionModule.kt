@@ -167,6 +167,23 @@ class MediaSessionModule(reactContext: ReactApplicationContext) :
         }
     }
 
+    @ReactMethod
+    fun destroy(promise: Promise) {
+        try {
+            mediaSession?.release()
+            mediaSession = null
+            notificationManager?.cancel(NOTIFICATION_ID)
+            
+            val intent = Intent(reactApplicationContext, MediaSessionService::class.java)
+            reactApplicationContext.stopService(intent)
+            
+            instance = null
+            promise.resolve(null)
+        } catch (e: Exception) {
+            promise.reject("ERROR", e.message)
+        }
+    }
+
     fun updatePlaybackState(isPlaying: Boolean) {
         currentIsPlaying = isPlaying
 
@@ -364,19 +381,6 @@ class MediaSessionModule(reactContext: ReactApplicationContext) :
             reactApplicationContext, action.hashCode(), intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
-    }
-
-    @ReactMethod
-    fun destroy(promise: Promise) {
-        try {
-            mediaSession?.release()
-            mediaSession = null
-            notificationManager?.cancel(NOTIFICATION_ID)
-            instance = null
-            promise.resolve(null)
-        } catch (e: Exception) {
-            promise.reject("ERROR", e.message)
-        }
     }
 
     @ReactMethod
