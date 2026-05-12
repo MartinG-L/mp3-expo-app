@@ -1,4 +1,5 @@
 import { MaterialIcons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 import {
   ActivityIndicator,
   FlatList,
@@ -85,20 +86,24 @@ export default function ModalPreciseSearchSongs({
           keyExtractor={(item, index) =>
             (precise ? item.recordingId : item.videoId) ?? index.toString()
           }
-          contentContainerStyle={{
-            paddingHorizontal: 5,
-          }}
           ListHeaderComponent={
             artistThumbnail ? (
-              <Image
-                source={{ uri: artistThumbnail }}
-                style={{
-                  width: "100%",
-                  height: 350,
-                  resizeMode: "cover",
-                  marginBottom: 10,
-                }}
-              />
+              <View style={{ width: "100%", height: 350, marginBottom: 10 }}>
+                <Image
+                  source={{ uri: artistThumbnail }}
+                  style={{ width: "100%", height: "100%", resizeMode: "cover" }}
+                />
+                <LinearGradient
+                  colors={["transparent", "black"]}
+                  style={{
+                    position: "absolute",
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    height: 250,
+                  }}
+                />
+              </View>
             ) : null
           }
           renderItem={({ item: music, index }) => (
@@ -112,6 +117,7 @@ export default function ModalPreciseSearchSongs({
                 paddingHorizontal: 7,
                 backgroundColor: "#111",
                 borderRadius: 5,
+                marginHorizontal: 5,
               }}
             >
               {currentSongData?.title === music.title && (
