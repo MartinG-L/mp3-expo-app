@@ -2,10 +2,21 @@ import axiosInstance from "@/app/utils/axiosInstance";
 import { useAudioState } from "@/contexts/AudioStateContext";
 import { playerRef, useAudio } from "@/contexts/PlayerContext";
 import { showError, showSuccess } from "@/lib/toast";
-import { MaterialIcons } from '@expo/vector-icons';
-import * as PortalPrimitive from '@rn-primitives/portal';
+import { MaterialIcons } from "@expo/vector-icons";
+import * as PortalPrimitive from "@rn-primitives/portal";
 import React, { useEffect, useRef, useState } from "react";
-import { ActivityIndicator, Dimensions, Image, Modal, Platform, Pressable, Text, TouchableOpacity, useWindowDimensions, View } from "react-native";
+import {
+  ActivityIndicator,
+  Dimensions,
+  Image,
+  Modal,
+  Platform,
+  Pressable,
+  Text,
+  TouchableOpacity,
+  useWindowDimensions,
+  View,
+} from "react-native";
 import Animated, {
   runOnJS,
   useAnimatedStyle,
@@ -21,19 +32,15 @@ import PlayPauseButton from "../Player/PlayPauseButton";
 import VerticalSlider from "../VerticalSlider";
 
 export default function Player() {
-  console.log("🎵 Player render"); 
+  console.log("🎵 Player render");
   const player = playerRef.current;
-  const {  
-    togglePlayPause,
-    setPlayerHeight,
-    prev,
-    next,
-    setListUserPlaylist,
-  } = useAudio();
-  const { currentSongData, Thumbnail, Duration, fetchingNewMediaUrl } = useAudioState();
+  const { togglePlayPause, setPlayerHeight, prev, next, setListUserPlaylist } =
+    useAudio();
+  const { currentSongData, Thumbnail, Duration, fetchingNewMediaUrl } =
+    useAudioState();
   let [newThumbnail, setnewThumbnail] = useState<string | null>(null);
-  let [UpdateCurrentSong, setUpdateCurrentSong] = useState<string|null>(null);
-  const { width: screenWidth } = Dimensions.get('window');
+  let [UpdateCurrentSong, setUpdateCurrentSong] = useState<string | null>(null);
+  const { width: screenWidth } = Dimensions.get("window");
   const [Volume, setVolume] = useState(0.5);
   const [modalVolumeVisble, setModalVolumeVisble] = useState(false);
   const [modalSaveInAlbumVisible, setModalSaveInAlbumVisible] = useState(false);
@@ -42,7 +49,12 @@ export default function Player() {
   const [leftWidth, setLeftWidth] = useState(0);
 
   const volumeRef = useRef<View>(null);
-  const [volumePos, setVolumePos] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
+  const [volumePos, setVolumePos] = useState<{
+    x: number;
+    y: number;
+    w: number;
+    h: number;
+  } | null>(null);
   const { width, height } = useWindowDimensions();
   const [isFullScreen, setIsFullScreen] = useState(false);
   const insets = useSafeAreaInsets();
@@ -54,17 +66,17 @@ export default function Player() {
   // Verificar que player exista
   if (!player) return null;
 
-  const isSmallPhone = width < 380 || height < 700;  
+  const isSmallPhone = width < 380 || height < 700;
   const isTablet = width >= 768;
   const isWeb = Platform.OS === "web";
   const isWebDesktop = isWeb && width >= 1024;
-  
+
   const icons = [
-    {name: "repeat", color: "#dfdfdfff"}, // default next
-    {name: "repeat", color: "#FFD700"}, // repeat infinite
-    {name: "repeat-one", color: "#FFD700"}, // repeat one
+    { name: "repeat", color: "#dfdfdfff" }, // default next
+    { name: "repeat", color: "#FFD700" }, // repeat infinite
+    { name: "repeat-one", color: "#FFD700" }, // repeat one
   ] as const;
-   const handleRepeat = () => {
+  const handleRepeat = () => {
     setstateRepeat((prev) => (prev + 1) % icons.length);
   };
 
@@ -91,17 +103,17 @@ export default function Player() {
         showSuccess("Cambios guardados correctamente");
       }
       const savedSong = {
-        id: req.data.id,         
+        id: req.data.id,
         videoId: req.data.videoId,
         title: req.data.title,
         urlThumbnail: req.data.thumbnail,
         duration: req.data.duration,
       };
-      setListUserPlaylist(prev => 
-        prev.map(playlist => {
+      setListUserPlaylist((prev) =>
+        prev.map((playlist) => {
           const shouldHaveSong = albumIds.includes(playlist.id);
           const hasSong = playlist.songs.some(
-            s => s.videoId === savedSong.videoId
+            (s) => s.videoId === savedSong.videoId,
           );
 
           // Si la playlist debería tener la canción pero no la tiene, la agregamos
@@ -117,23 +129,25 @@ export default function Player() {
           if (!shouldHaveSong && hasSong) {
             return {
               ...playlist,
-              songs: playlist.songs.filter(s => s.videoId !== savedSong.videoId),
+              songs: playlist.songs.filter(
+                (s) => s.videoId !== savedSong.videoId,
+              ),
               songCount: playlist.songCount - 1,
             };
           }
 
           return playlist;
-        })
+        }),
       );
     } catch (err: any) {
       if (!err.response) {
-          showError("No se pudo conectar al servidor");
-        } else if (err.response?.status === 500) {
-          showError("Error interno del servidor");
-        } else if (err.response?.status === 404) {
-          showError("La playlist no existe");
-        } else {
-          showError("No se pudo completar la operación");
+        showError("No se pudo conectar al servidor");
+      } else if (err.response?.status === 500) {
+        showError("Error interno del servidor");
+      } else if (err.response?.status === 404) {
+        showError("La playlist no existe");
+      } else {
+        showError("No se pudo completar la operación");
       }
     }
   };
@@ -142,26 +156,29 @@ export default function Player() {
     transform: [{ translateY: fullScreenY.value }],
   }));
 
-
   useEffect(() => {
     if (isFullScreen) {
       setShouldRender(true);
       fullScreenY.value = withTiming(0, { duration: 300 }, (finished) => {
         if (finished) {
-          runOnJS(setFullyVisible)(true); 
+          runOnJS(setFullyVisible)(true);
         }
       });
     } else {
-      setFullyVisible(false); 
-      fullScreenY.value = withTiming(OFFSCREEN_Y, { duration: 200 }, (finished) => {
-        if (finished) {
-          runOnJS(setShouldRender)(false);
-        }
-      });
+      setFullyVisible(false);
+      fullScreenY.value = withTiming(
+        OFFSCREEN_Y,
+        { duration: 200 },
+        (finished) => {
+          if (finished) {
+            runOnJS(setShouldRender)(false);
+          }
+        },
+      );
     }
   }, [isFullScreen]);
 
-  // Usamos useEffect para que no nos spamee el thumbnail, 
+  // Usamos useEffect para que no nos spamee el thumbnail,
   // Nos aseguramos de que solo se imprima cuando realmente cambie el thumbnail
   // Esto pasa porque en nuestro context el status se va actualizando cada segundo
   useEffect(() => {
@@ -180,7 +197,7 @@ export default function Player() {
         y: pageY,
         w: w,
         h: h,
-      });  
+      });
     });
   };
 
@@ -197,14 +214,21 @@ export default function Player() {
   };
 
   return (
-    <View 
+    <View
       onLayout={(event) => {
         const { height } = event.nativeEvent.layout;
-        setPlayerHeight(prev => (prev === height ? prev : height));
+        setPlayerHeight((prev) => (prev === height ? prev : height));
       }}
-      style={{display: currentSongData ? "flex" : "none", backgroundColor: "#121212", borderTopWidth: 2, borderTopColor: "#333", flex: 1}}>
+      style={{
+        display: currentSongData ? "flex" : "none",
+        backgroundColor: "#121212",
+        borderTopWidth: 2,
+        borderTopColor: "#333",
+        flex: 1,
+      }}
+    >
       {/* PlayerFinishHandler cuando carga la cancion se actualiza fetchingNewMediaUrl */}
-      <PlayerFinishHandler 
+      <PlayerFinishHandler
         player={player}
         stateRepeat={stateRepeat}
         setstateRepeat={setstateRepeat}
@@ -212,166 +236,202 @@ export default function Player() {
       />
       {/* PLayer fullscreen */}
       {shouldRender && (
-      <PortalPrimitive.Portal name="root">
-        <Animated.View
-          pointerEvents={isFullScreen ? "auto" : "none"}
-          style={[
-            {
-              position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundColor: "#0e0e0e",
-              zIndex: 50,
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "space-between",
-              paddingTop: insets.top + 12,
-              paddingBottom: isSmallPhone ? 35 : 60,
+        <PortalPrimitive.Portal name="root">
+          <Animated.View
+            pointerEvents={isFullScreen ? "auto" : "none"}
+            style={[
+              {
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: "#0e0e0e",
+                zIndex: 50,
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "space-between",
+                paddingTop: insets.top + 12,
+                paddingBottom: isSmallPhone ? 35 : 60,
 
-              ...(Platform.OS === "web" && isSmallPhone && {
-                marginHorizontal: "auto",
-                paddingHorizontal: 5,
-              }),
-              ...(Platform.OS === "web" && {
-                marginHorizontal: "auto",
-                paddingHorizontal: isWebDesktop ? 30 : 15,
-              }),
-            },
-            fullScreenStyle,
-          ]}
-        >
-          {/* boton cerrar */}
-          <TouchableOpacity
-            onPress={() => setIsFullScreen(false)}
-            style={{ alignSelf: "center" }}
+                ...(Platform.OS === "web" &&
+                  isSmallPhone && {
+                    marginHorizontal: "auto",
+                    paddingHorizontal: 5,
+                  }),
+                ...(Platform.OS === "web" && {
+                  marginHorizontal: "auto",
+                  paddingHorizontal: isWebDesktop ? 30 : 15,
+                }),
+              },
+              fullScreenStyle,
+            ]}
           >
-            <MaterialIcons name="keyboard-arrow-down" size={40} color="#444" />
-          </TouchableOpacity>
+            {/* boton cerrar */}
+            <TouchableOpacity
+              onPress={() => setIsFullScreen(false)}
+              style={{ alignSelf: "center" }}
+            >
+              <MaterialIcons
+                name="keyboard-arrow-down"
+                size={40}
+                color="#444"
+              />
+            </TouchableOpacity>
 
-          {/* Header */}
-          <View style={{
-            width: "100%",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 25,
-          }}>
-            {/* Thumbnail */}
+            {/* Header */}
             <View
               style={{
-                width: isSmallPhone 
-                ? thumbSize * 1.3 
-                : Platform.OS !== "web" 
-                ? thumbSize * 1.5 
-                : thumbSize * 1.8,
-                height: isSmallPhone 
-                ? thumbSize * 1.2 
-                : Platform.OS !== "web" 
-                ? thumbSize * 1.5 
-                : thumbSize * 1.8,
-                borderRadius: 14,
-                overflow: "hidden",
-                ...(Platform.OS !== "android" && {
-                  shadowColor: "#000",
-                  shadowOffset: { width: 0, height: 10 },
-                  shadowOpacity: 0.5,
-                  shadowRadius: 18,
+                width: "100%",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 25,
+              }}
+            >
+              {/* Thumbnail */}
+              <View
+                style={{
+                  width: isSmallPhone
+                    ? thumbSize * 1.3
+                    : Platform.OS !== "web"
+                      ? thumbSize * 1.5
+                      : thumbSize * 1.8,
+                  height: isSmallPhone
+                    ? thumbSize * 1.2
+                    : Platform.OS !== "web"
+                      ? thumbSize * 1.5
+                      : thumbSize * 1.8,
+                  borderRadius: 14,
+                  overflow: "hidden",
+                  ...(Platform.OS !== "android" && {
+                    shadowColor: "#000",
+                    shadowOffset: { width: 0, height: 10 },
+                    shadowOpacity: 0.5,
+                    shadowRadius: 18,
+                  }),
+                }}
+              >
+                <Image
+                  resizeMode="cover"
+                  source={Thumbnail ? { uri: Thumbnail } : undefined}
+                  style={{ width: "100%", height: "100%" }}
+                />
+              </View>
+            </View>
+
+            {/* Actions */}
+            <View
+              style={{
+                width: "100%",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: isSmallPhone ? 15 : 40,
+                paddingHorizontal: isSmallPhone ? 0 : 32,
+                ...(!isWeb && {
+                  paddingHorizontal: 5,
                 }),
               }}
             >
-              <Image
-                resizeMode="cover"
-                source={Thumbnail ? { uri: Thumbnail } : undefined}
-                style={{ width: "100%", height: "100%" }}
-              />
-            </View>
-          </View>
-          
-          {/* Actions */}
-          <View style={{
-            width: "100%",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: isSmallPhone ? 15 : 40,
-            paddingHorizontal: isSmallPhone ? 0 : 32,
-            ...(!isWeb && {
-              paddingHorizontal: 5,
-            }),
-          }}>
-            {/* Slider progreso + time + current song */}
-            <View style={{ width: "100%" }}>
-              {/* title song */}
-              <View style={{ width: "100%", alignItems: "center", marginBottom: 6 }}>
-                <Text
-                  numberOfLines={1}
+              {/* Slider progreso + time + current song */}
+              <View style={{ width: "100%" }}>
+                {/* title song */}
+                <View
                   style={{
-                    color: "#fff",
-                    fontSize: isSmallPhone ? 14 : 18,
-                    fontWeight: "700",
-                    letterSpacing: 0.2,
-                    textAlign: "center",
+                    width: "100%",
+                    alignItems: "center",
+                    marginBottom: 6,
                   }}
                 >
-                  {currentSongData?.title}
-                </Text>
+                  <Text
+                    numberOfLines={1}
+                    style={{
+                      color: "#fff",
+                      fontSize: isSmallPhone ? 14 : 18,
+                      fontWeight: "700",
+                      letterSpacing: 0.2,
+                      textAlign: "center",
+                    }}
+                  >
+                    {currentSongData?.title}
+                  </Text>
+                </View>
+                {/* time */}
+                <PlayerTime
+                  player={player}
+                  Duration={Duration}
+                  variant="full"
+                />
+                {/* slider */}
+                <PlayerSlider player={player} Duration={Duration} />
               </View>
-              {/* time */}
-              <PlayerTime player={player} Duration={Duration} variant="full" />
-              {/* slider */}
-              <PlayerSlider player={player} Duration={Duration} />
-            </View>
-          
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: isSmallPhone ? 5 : 20,
-                width: "100%",
-              }}
-            >
-              <TouchableOpacity onPress={handleRepeat} style={{ padding: 8 }}>
-                <MaterialIcons name={icons[stateRepeat].name} size={26} color={icons[stateRepeat].color} />
-              </TouchableOpacity>
 
-              <TouchableOpacity onPress={prev} style={{ padding: 8 }}>
-                <MaterialIcons name="skip-previous" size={44} color="#dfdfdf" />
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                onPress={togglePlayPause}
+              <View
                 style={{
-                  width: 72, height: 72, borderRadius: 36,
-                  backgroundColor: "#FFD700",
-                  alignItems: "center", justifyContent: "center",
-                  shadowColor: "#FFD700",
-                  shadowOffset: { width: 0, height: 0 },
-                  shadowOpacity: 0.4, shadowRadius: 14, elevation: 10,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: isSmallPhone ? 5 : 20,
+                  width: "100%",
                 }}
-              > 
-                {fetchingNewMediaUrl ? (
-                  <ActivityIndicator size="small" color="#000" />
-                ) : (
-                  <PlayPauseButton 
-                    player={player}
-                    fetchingNewMediaUrl={fetchingNewMediaUrl}
-                    togglePlayPause={togglePlayPause} size={40}
-                    color="#000" 
+              >
+                <TouchableOpacity onPress={handleRepeat} style={{ padding: 8 }}>
+                  <MaterialIcons
+                    name={icons[stateRepeat].name}
+                    size={26}
+                    color={icons[stateRepeat].color}
                   />
-                )}
-              </TouchableOpacity>
+                </TouchableOpacity>
 
-              <TouchableOpacity onPress={() => next()} style={{ padding: 8 }}>
-                <MaterialIcons name="skip-next" size={44} color="#dfdfdf" />
-              </TouchableOpacity>
+                <TouchableOpacity onPress={prev} style={{ padding: 8 }}>
+                  <MaterialIcons
+                    name="skip-previous"
+                    size={44}
+                    color="#dfdfdf"
+                  />
+                </TouchableOpacity>
 
-              <TouchableOpacity onPress={() => setModalSaveInAlbumVisible(true)} style={{ padding: 8 }}>
-                <MaterialIcons name="add-box" size={26} color="#dfdfdf" />
-              </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={togglePlayPause}
+                  style={{
+                    width: 72,
+                    height: 72,
+                    borderRadius: 36,
+                    backgroundColor: "#FFD700",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    shadowColor: "#FFD700",
+                    shadowOffset: { width: 0, height: 0 },
+                    shadowOpacity: 0.4,
+                    shadowRadius: 14,
+                    elevation: 10,
+                  }}
+                >
+                  {fetchingNewMediaUrl ? (
+                    <ActivityIndicator size="small" color="#000" />
+                  ) : (
+                    <PlayPauseButton
+                      player={player}
+                      fetchingNewMediaUrl={fetchingNewMediaUrl}
+                      togglePlayPause={togglePlayPause}
+                      size={40}
+                      color="#000"
+                    />
+                  )}
+                </TouchableOpacity>
 
-              {/* Volumen */}
-              {/* <TouchableOpacity
+                <TouchableOpacity onPress={() => next()} style={{ padding: 8 }}>
+                  <MaterialIcons name="skip-next" size={44} color="#dfdfdf" />
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={() => setModalSaveInAlbumVisible(true)}
+                  style={{ padding: 8 }}
+                >
+                  <MaterialIcons name="add-box" size={26} color="#dfdfdf" />
+                </TouchableOpacity>
+
+                {/* Volumen */}
+                {/* <TouchableOpacity
                 ref={volumeRef}
                 onPress={openVolume}
                 style={{ padding: 8 }}
@@ -388,67 +448,103 @@ export default function Player() {
                   color={modalVolumeVisble ? "#888" : "#dfdfdf"}
                 />
               </TouchableOpacity> */}
+              </View>
             </View>
-          </View>
-        </Animated.View>
-      </PortalPrimitive.Portal>
-    )}
+          </Animated.View>
+        </PortalPrimitive.Portal>
+      )}
       {/* Header Current song */}
-      <View style={{
-        paddingVertical: 6,
-        width: "100%",
-        flex: 1,
-      }}>
-          <TouchableOpacity onPress={()=>{setIsFullScreen(prev => !prev)}}>
-            <Text style={{color:"white", fontWeight: "bold", fontSize: 15, textAlign: "center"}}>{currentSongData?.title}</Text>
-          </TouchableOpacity>
+      <View
+        style={{
+          paddingVertical: 6,
+          width: "100%",
+          flex: 1,
+        }}
+      >
+        <TouchableOpacity
+          onPress={() => {
+            setIsFullScreen((prev) => !prev);
+          }}
+        >
+          <Text
+            style={{
+              color: "white",
+              fontWeight: "bold",
+              fontSize: 15,
+              textAlign: "center",
+            }}
+          >
+            {currentSongData?.title}
+          </Text>
+        </TouchableOpacity>
       </View>
       {/* SLIDER */}
-      <View style={{paddingVertical: 3, display:"flex", flexDirection:"row", alignItems: "center"}}>
-        <PlayerSlider player={player} Duration={Duration}/>
+      <View
+        style={{
+          paddingVertical: 3,
+          display: "flex",
+          flexDirection: "row",
+          alignItems: "center",
+        }}
+      >
+        <PlayerSlider player={player} Duration={Duration} />
       </View>
       {/* THUMBNAIL */}
-      <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 12, paddingBottom: 7}}>
-        <View 
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          paddingHorizontal: 12,
+          paddingBottom: 7,
+        }}
+      >
+        <View
           onLayout={(e) => setLeftWidth(e.nativeEvent.layout.width)}
-          style={{display: "flex", flexDirection: "row", alignItems: "center"}}
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "center",
+          }}
         >
-          <TouchableOpacity onPress={()=>{
-            setIsFullScreen(prev => !prev) 
-          }}>
-            <Image 
+          <TouchableOpacity
+            onPress={() => {
+              setIsFullScreen((prev) => !prev);
+            }}
+          >
+            <Image
               source={Thumbnail ? { uri: Thumbnail } : undefined}
-              style={{ width: 60, height: 60, borderRadius: 3}} 
+              style={{ width: 60, height: 60, borderRadius: 3 }}
             />
           </TouchableOpacity>
           {/* Segundos*/}
-          <View style={{marginLeft: 6}}>
+          <View style={{ marginLeft: 6 }}>
             <PlayerTime player={player} Duration={Duration} variant="mini" />
           </View>
         </View>
-      
+
         {/* Actions */}
-        <View style={{
+        <View
+          style={{
             display: "flex",
             flexDirection: "row",
-            alignItems:"center",
+            alignItems: "center",
             justifyContent: "center",
             flex: 1,
-          }}>
-          
+          }}
+        >
           {/* Volume Button */}
-          <TouchableOpacity 
+          <TouchableOpacity
             ref={volumeRef}
             onPress={openVolume}
-            style={{padding: 5}}
+            style={{ padding: 5 }}
           >
             <MaterialIcons
               name={
                 player.muted || Volume <= 0.01
-                ? "volume-off" 
-                : Volume < 0.5 
-                ? "volume-down" 
-                : "volume-up"
+                  ? "volume-off"
+                  : Volume < 0.5
+                    ? "volume-down"
+                    : "volume-up"
               }
               size={28}
               color={modalVolumeVisble ? "#888" : "#dfdfdfff"}
@@ -457,70 +553,102 @@ export default function Player() {
           {modalVolumeVisble && volumePos && (
             <Modal visible={modalVolumeVisble} transparent animationType="none">
               <Pressable
-                style={{flex: 1}}
+                style={{ flex: 1 }}
                 onPress={() => setModalVolumeVisble(false)}
               >
-              <View style={{
-                position: "absolute",
-                backgroundColor: "#222", 
-                left: volumePos.x + volumePos.w / 2 - 15,
-                top: volumePos.y - 145,
-                borderRadius: 5,
-                borderWidth: 1,
-                borderColor: "#333",
-                paddingVertical: 10,
-              }}>
-                <VerticalSlider
-                  height={120}
-                  min={0}
-                  max={1}
-                  value={Volume}
-                  onChange={(value) => {
-                    setVolume(value);
-                    value <= 0.01 ? player.muted = true : player.muted = false
-                    player.volume = value;
+                <View
+                  style={{
+                    position: "absolute",
+                    backgroundColor: "#222",
+                    left: volumePos.x + volumePos.w / 2 - 15,
+                    top: volumePos.y - 145,
+                    borderRadius: 5,
+                    borderWidth: 1,
+                    borderColor: "#333",
+                    paddingVertical: 10,
                   }}
-                />
-              </View>
+                >
+                  <VerticalSlider
+                    height={120}
+                    min={0}
+                    max={1}
+                    value={Volume}
+                    onChange={(value) => {
+                      setVolume(value);
+                      value <= 0.01
+                        ? (player.muted = true)
+                        : (player.muted = false);
+                      player.volume = value;
+                    }}
+                  />
+                </View>
               </Pressable>
             </Modal>
           )}
 
-          <TouchableOpacity style={{padding: 5}} onPress={()=>{setModalSaveInAlbumVisible(true)}}>
+          <TouchableOpacity
+            style={{ padding: 5 }}
+            onPress={() => {
+              setModalSaveInAlbumVisible(true);
+            }}
+          >
             <MaterialIcons name="add-box" size={28} color="#dfdfdfff" />
-            <ModalSelectAlbum 
+            <ModalSelectAlbum
               visible={modalSaveInAlbumVisible}
               onClose={() => setModalSaveInAlbumVisible(false)}
-              onSelect={handleSaveInAlbum} 
+              onSelect={handleSaveInAlbum}
             />
           </TouchableOpacity>
 
           {/* Repeat */}
-          <TouchableOpacity style={{paddingVertical: 5}} onPress={handleRepeat}>
-            <MaterialIcons name={icons[stateRepeat].name} size={28} color={icons[stateRepeat].color} />
-          </TouchableOpacity >
+          <TouchableOpacity
+            style={{ paddingVertical: 5 }}
+            onPress={handleRepeat}
+          >
+            <MaterialIcons
+              name={icons[stateRepeat].name}
+              size={28}
+              color={icons[stateRepeat].color}
+            />
+          </TouchableOpacity>
 
-          <View style={{height: 40, width: 2, backgroundColor: "#797979ff", marginHorizontal: 10}}>
-          </View>
-          <TouchableOpacity style={{paddingVertical: 5}} onPress={prev}>
+          <View
+            style={{
+              height: 40,
+              width: 2,
+              backgroundColor: "#797979ff",
+              marginHorizontal: 10,
+            }}
+          ></View>
+          <TouchableOpacity style={{ paddingVertical: 5 }} onPress={prev}>
             <MaterialIcons name="skip-previous" size={25} color="#dfdfdfff" />
-          </TouchableOpacity >
-          <TouchableOpacity 
-            style={{ padding: 5, width: 40, height: 60, alignItems: "center", justifyContent: "center" }} 
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={{
+              padding: 5,
+              width: 40,
+              height: 60,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
             onPress={togglePlayPause}
           >
             {fetchingNewMediaUrl ? (
               <ActivityIndicator size="small" color="#fff" />
             ) : (
-              <PlayPauseButton 
-                player={player} 
+              <PlayPauseButton
+                player={player}
                 fetchingNewMediaUrl={fetchingNewMediaUrl}
                 togglePlayPause={togglePlayPause}
-                size={40} color="#dfdfdfff"
+                size={40}
+                color="#dfdfdfff"
               />
             )}
           </TouchableOpacity>
-          <TouchableOpacity style={{paddingVertical: 5}} onPress={()=> next()}>
+          <TouchableOpacity
+            style={{ paddingVertical: 5 }}
+            onPress={() => next()}
+          >
             <MaterialIcons name="skip-next" size={25} color="#dfdfdfff" />
           </TouchableOpacity>
           <View style={{ width: isSmallPhone || !isWeb ? 0 : leftWidth }} />
@@ -530,7 +658,11 @@ export default function Player() {
     </View>
   );
 }
-function AudioState(): { currentSongData: any; Thumbnail: any; Duration: any; fetchingNewMediaUrl: any; } {
+function AudioState(): {
+  currentSongData: any;
+  Thumbnail: any;
+  Duration: any;
+  fetchingNewMediaUrl: any;
+} {
   throw new Error("Function not implemented.");
 }
-
