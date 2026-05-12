@@ -10,7 +10,6 @@ import {
   ActivityIndicator,
   Dimensions,
   Image,
-  Platform,
   Text,
   TouchableOpacity,
   useWindowDimensions,
@@ -46,7 +45,6 @@ export default function Player() {
   const [modalSaveInAlbumVisible, setModalSaveInAlbumVisible] = useState(false);
   const [stateRepeat, setstateRepeat] = useState(0);
   const thumbSize = Math.min(screenWidth * 0.52, 280);
-  const [leftWidth, setLeftWidth] = useState(0);
 
   const volumeRef = useRef<View>(null);
   const [volumePos, setVolumePos] = useState<{
@@ -68,8 +66,6 @@ export default function Player() {
 
   const isSmallPhone = width < 380 || height < 700;
   const isTablet = width >= 768;
-  const isWeb = Platform.OS === "web";
-  const isWebDesktop = isWeb && width >= 1024;
 
   const icons = [
     { name: "repeat", color: "#dfdfdfff" }, // default next
@@ -252,17 +248,7 @@ export default function Player() {
                 alignItems: "center",
                 justifyContent: "space-between",
                 paddingTop: insets.top + 12,
-                paddingBottom: isSmallPhone ? 35 : 60,
-
-                ...(Platform.OS === "web" &&
-                  isSmallPhone && {
-                    marginHorizontal: "auto",
-                    paddingHorizontal: 5,
-                  }),
-                ...(Platform.OS === "web" && {
-                  marginHorizontal: "auto",
-                  paddingHorizontal: isWebDesktop ? 30 : 15,
-                }),
+                paddingBottom: isSmallPhone ? 35 : 80,
               },
               fullScreenStyle,
             ]}
@@ -274,7 +260,7 @@ export default function Player() {
             >
               <MaterialIcons
                 name="keyboard-arrow-down"
-                size={40}
+                size={43}
                 color="#444"
               />
             </TouchableOpacity>
@@ -291,24 +277,13 @@ export default function Player() {
               {/* Thumbnail */}
               <View
                 style={{
-                  width: isSmallPhone
-                    ? thumbSize * 1.3
-                    : Platform.OS !== "web"
-                      ? thumbSize * 1.5
-                      : thumbSize * 1.8,
-                  height: isSmallPhone
-                    ? thumbSize * 1.2
-                    : Platform.OS !== "web"
-                      ? thumbSize * 1.5
-                      : thumbSize * 1.8,
+                  width: isSmallPhone ? thumbSize * 1.3 : thumbSize * 1.5,
+                  height: isSmallPhone ? thumbSize * 1.2 : thumbSize * 1.5,
                   borderRadius: 14,
                   overflow: "hidden",
-                  ...(Platform.OS !== "android" && {
-                    shadowColor: "#000",
-                    shadowOffset: { width: 0, height: 10 },
-                    shadowOpacity: 0.5,
-                    shadowRadius: 18,
-                  }),
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 10 },
+                  shadowOpacity: 0.5,
                 }}
               >
                 <Image
@@ -327,7 +302,7 @@ export default function Player() {
                 justifyContent: "center",
                 gap: isSmallPhone ? 15 : 40,
                 paddingHorizontal: isSmallPhone ? 0 : 32,
-                ...(!isWeb && {
+                ...(!isSmallPhone && {
                   paddingHorizontal: 5,
                 }),
               }}
@@ -407,7 +382,7 @@ export default function Player() {
                   }}
                 >
                   {fetchingNewMediaUrl ? (
-                    <ActivityIndicator size="small" color="#000" />
+                    <ActivityIndicator size="large" color="#000" />
                   ) : (
                     <PlayPauseButton
                       player={player}
@@ -415,6 +390,7 @@ export default function Player() {
                       togglePlayPause={togglePlayPause}
                       size={40}
                       color="#000"
+                      iconOffset={-4}
                     />
                   )}
                 </TouchableOpacity>
@@ -499,11 +475,11 @@ export default function Player() {
         }}
       >
         <View
-          onLayout={(e) => setLeftWidth(e.nativeEvent.layout.width)}
           style={{
             display: "flex",
             flexDirection: "row",
             alignItems: "center",
+            flexShrink: 0,
           }}
         >
           <TouchableOpacity
@@ -615,24 +591,31 @@ export default function Player() {
             <MaterialIcons name="skip-previous" size={25} color="#dfdfdfff" />
           </TouchableOpacity>
           <TouchableOpacity
+            onPress={togglePlayPause}
             style={{
-              padding: 5,
-              width: 40,
-              height: 60,
+              width: 42,
+              height: 42,
+              borderRadius: 36,
+              backgroundColor: "#FFD700",
               alignItems: "center",
               justifyContent: "center",
+              shadowColor: "#FFD700",
+              shadowOffset: { width: 0, height: 0 },
+              shadowOpacity: 0.4,
+              shadowRadius: 14,
+              elevation: 10,
+              marginHorizontal: isSmallPhone ? 5 : 10,
             }}
-            onPress={togglePlayPause}
           >
             {fetchingNewMediaUrl ? (
-              <ActivityIndicator size="small" color="#fff" />
+              <ActivityIndicator size="small" color="#000" />
             ) : (
               <PlayPauseButton
                 player={player}
                 fetchingNewMediaUrl={fetchingNewMediaUrl}
                 togglePlayPause={togglePlayPause}
-                size={40}
-                color="#dfdfdfff"
+                size={25}
+                color="#000"
               />
             )}
           </TouchableOpacity>
@@ -642,7 +625,6 @@ export default function Player() {
           >
             <MaterialIcons name="skip-next" size={25} color="#dfdfdfff" />
           </TouchableOpacity>
-          <View style={{ width: isSmallPhone || !isWeb ? 0 : leftWidth }} />
         </View>
         {/* Fin actions */}
       </View>
