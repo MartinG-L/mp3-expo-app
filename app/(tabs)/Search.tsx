@@ -53,6 +53,7 @@ export default function Search() {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [artistThumbnail, setArtistThumbnail] = useState("");
   const [selectedArtist, setSelectedArtist] = useState<Artist | null>(null);
+  const [ErrorMsg, setErrorMsg] = useState("");
 
   useEffect(() => {
     setresultList([]);
@@ -60,6 +61,13 @@ export default function Search() {
   }, [precise]);
 
   async function fetchMusic() {
+    if (!searchSong.trim()) {
+      setErrorMsg("Por favor, ingresa un término de búsqueda válido.");
+      setresultList([]);
+      setresultArtistList([]);
+      return;
+    }
+    setErrorMsg("");
     setIsLoading(true);
     try {
       if (precise) {
@@ -175,6 +183,16 @@ export default function Search() {
             color: "white",
           }}
         />
+        <TouchableOpacity
+          onPress={() => {
+            setSearchSong("");
+            setresultList([]);
+            setresultArtistList([]);
+          }}
+          style={{ padding: 5 }}
+        >
+          <MaterialIcons name="close" size={20} color="rgba(255,255,255,0.3)" />
+        </TouchableOpacity>
       </View>
       <View
         style={{
@@ -190,13 +208,30 @@ export default function Search() {
         </Text>
         <Switch
           value={precise}
-          onValueChange={(value) => setPrecise(value)}
+          onValueChange={(value) => {
+            setPrecise(value);
+            setresultList([]);
+            setresultArtistList([]);
+            setErrorMsg("");
+          }}
           trackColor={{ false: "#333", true: "#FFD700" }}
           thumbColor="#fff"
         />
       </View>
 
       <View style={{ flex: 1, width: "100%" }}>
+        {ErrorMsg ? (
+          <Text
+            style={{
+              color: "red",
+              textAlign: "center",
+              marginTop: 100,
+              fontSize: 16,
+            }}
+          >
+            {ErrorMsg}
+          </Text>
+        ) : null}
         {isLoading ? (
           <ActivityIndicator
             style={{ marginTop: 120 }}
