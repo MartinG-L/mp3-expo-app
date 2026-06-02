@@ -155,7 +155,7 @@ android {
 dependencies {
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
-    implementation 'com.github.TeamNewPipe:NewPipeExtractor:v0.26.0'
+    implementation 'com.github.TeamNewPipe:NewPipeExtractor:v0.26.2'
     implementation "androidx.media:media:1.7.0"
 
 
