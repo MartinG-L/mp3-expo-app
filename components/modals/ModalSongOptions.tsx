@@ -1,15 +1,26 @@
+import { useAudio } from "@/contexts/PlayerContext";
 import { MaterialIcons } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
 import { useEffect, useState } from "react";
-import { Text, TouchableOpacity, TouchableWithoutFeedback, View } from "react-native";
-import Animated, { runOnJS, useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
+import {
+  Text,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
+} from "react-native";
+import Animated, {
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 
 interface Song {
   id: number;
-  title: string,
-  videoId: string,
-  urlThumbnail: string
-  duration: number
+  title: string;
+  videoId: string;
+  urlThumbnail: string;
+  duration: number;
 }
 
 interface ModalSongOptionsProps {
@@ -20,6 +31,17 @@ interface ModalSongOptionsProps {
   onSetThumbnail: (song: Song) => void;
 }
 
+interface PlayListData {
+  id: number;
+  name: String;
+  description: String;
+  thumbnail: String;
+  created_at: number;
+  is_default: boolean;
+  songCount: number;
+  songs: Song[];
+}
+
 export default function ModalSongOptions({
   visible,
   song,
@@ -28,6 +50,7 @@ export default function ModalSongOptions({
   onSetThumbnail,
 }: ModalSongOptionsProps) {
   const [isMounted, setIsMounted] = useState(false);
+  const { setListUserPlaylist } = useAudio();
   const blurOpacity = useSharedValue(0);
   const translateY = useSharedValue(300);
 
@@ -69,7 +92,10 @@ export default function ModalSongOptions({
     <Animated.View
       style={{
         position: "absolute",
-        top: 0, left: 0, right: 0, bottom: 0,
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
         justifyContent: "flex-end",
         zIndex: 999,
       }}
@@ -80,7 +106,10 @@ export default function ModalSongOptions({
           style={[
             {
               position: "absolute",
-              top: 0, left: 0, right: 0, bottom: 0,
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
               backgroundColor: "rgba(0,0,0,0.5)",
             },
             blurStyle,
@@ -89,7 +118,13 @@ export default function ModalSongOptions({
           <BlurView
             intensity={60}
             tint="dark"
-            style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+            }}
           />
         </Animated.View>
       </TouchableWithoutFeedback>
@@ -109,26 +144,32 @@ export default function ModalSongOptions({
         ]}
       >
         {/* Handle */}
-        <View style={{
-          alignItems: "center",
-          paddingTop: 10,
-          paddingBottom: 4,
-        }}>
-          <View style={{
-            width: 36,
-            height: 4,
-            borderRadius: 2,
-            backgroundColor: "#333",
-          }} />
+        <View
+          style={{
+            alignItems: "center",
+            paddingTop: 10,
+            paddingBottom: 4,
+          }}
+        >
+          <View
+            style={{
+              width: 36,
+              height: 4,
+              borderRadius: 2,
+              backgroundColor: "#333",
+            }}
+          />
         </View>
 
         {/* Título canción */}
-        <View style={{
-          paddingHorizontal: 16,
-          paddingVertical: 12,
-          borderBottomWidth: 1,
-          borderBottomColor: "#222",
-        }}>
+        <View
+          style={{
+            paddingHorizontal: 16,
+            paddingVertical: 12,
+            borderBottomWidth: 1,
+            borderBottomColor: "#222",
+          }}
+        >
           <Text style={{ color: "#888", fontSize: 12 }} numberOfLines={1}>
             {song?.title}
           </Text>
@@ -151,7 +192,9 @@ export default function ModalSongOptions({
           }}
         >
           <MaterialIcons name="image" size={20} color="white" />
-          <Text style={{ color: "white", fontSize: 14 }}>Establecer como portada</Text>
+          <Text style={{ color: "white", fontSize: 14 }}>
+            Establecer como portada
+          </Text>
         </TouchableOpacity>
 
         {/* Eliminar de playlist */}
@@ -169,7 +212,9 @@ export default function ModalSongOptions({
           }}
         >
           <MaterialIcons name="delete" size={20} color="#a83737ff" />
-          <Text style={{ color: "#a83737ff", fontSize: 14 }}>Eliminar de playlist</Text>
+          <Text style={{ color: "#a83737ff", fontSize: 14 }}>
+            Eliminar de playlist
+          </Text>
         </TouchableOpacity>
       </Animated.View>
     </Animated.View>

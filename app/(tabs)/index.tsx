@@ -1,4 +1,5 @@
 import FullScreenPanelHome from "@/components/FullScreenPanelHome";
+import { useAudio } from "@/contexts/PlayerContext";
 import { MaterialIcons } from "@expo/vector-icons";
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -15,6 +16,14 @@ import {
 import axiosInstance from "../utils/axiosInstance";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
+
+interface Song {
+  id: number;
+  title: string;
+  videoId: string;
+  urlThumbnail: string;
+  duration: number;
+}
 
 // ── Skeleton ────────────────────────────────────────────────────────────────
 function Skeleton({
@@ -89,7 +98,6 @@ function TrackRow({
           {track.artist}
         </Text>
       </View>
-      <MaterialIcons name="more-vert" size={18} color="#555" />
     </TouchableOpacity>
   );
 }
@@ -181,12 +189,15 @@ function SectionHeader({
 
 // ── HomeScreen ────────────────────────────────────────────────────────────────
 export default function HomeScreen() {
-  // Replace with your actual store hooks
   const username = "L0rkz2";
+  const { queueAndPlay, PlayerHeight } = useAudio();
   const [topTracks, setTopTracks] = useState<any[]>([]);
   const [topArtists, setTopArtists] = useState<any[]>([]);
   const [loadingTracks, setLoadingTracks] = useState(true);
   const [loadingArtists, setLoadingArtists] = useState(true);
+
+  const [selectedSong, setSelectedSong] = useState<Song | null>(null);
+  const [showSongOptions, setShowSongOptions] = useState(false);
 
   const [showAllTracks, setShowAllTracks] = useState(false);
 
@@ -254,7 +265,7 @@ export default function HomeScreen() {
   };
 
   return (
-    <>
+    <View style={{ marginBottom: PlayerHeight, flex: 1 }}>
       <ScrollView
         style={styles.container}
         contentContainerStyle={styles.content}
@@ -338,21 +349,21 @@ export default function HomeScreen() {
           />
           {loadingTracks
             ? Array.from({ length: 10 }).map((_, i) => (
-                <View key={i} style={{ marginBottom: 4 }}>
+                <View key={i}>
                   <Skeleton width="100%" height={58} borderRadius={8} />
                 </View>
               ))
-            : topTracks
-                .slice(0, 10)
-                .map((track, i) => (
-                  <TrackRow
-                    key={track.id}
-                    track={track}
-                    index={i}
-                    onPress={() => {}}
-                    onLongPress={() => {}}
-                  />
-                ))}
+            : topTracks.slice(0, 10).map((track, i) => (
+                <TrackRow
+                  key={track.id}
+                  track={track}
+                  index={i}
+                  onPress={() => {
+                    queueAndPlay(topTracks, i);
+                  }}
+                  onLongPress={() => {}}
+                />
+              ))}
         </View>
       </ScrollView>
 
@@ -366,7 +377,17 @@ export default function HomeScreen() {
           data={topTracks}
           keyExtractor={(item) => item.id.toString()}
           renderItem={({ item, index }) => (
-            <TrackRow track={item} index={index} onPress={() => {}} />
+            <TrackRow
+              track={item}
+              index={index}
+              onPress={() => {
+                queueAndPlay(topTracks, index);
+              }}
+              onLongPress={() => {
+                setSelectedSong(item);
+                setShowSongOptions(true);
+              }}
+            />
           )}
         />
       </FullScreenPanelHome>
@@ -391,12 +412,18 @@ export default function HomeScreen() {
             data={artistSongs}
             keyExtractor={(item) => item.videoId ?? item.id}
             renderItem={({ item, index }) => (
-              <TrackRow track={item} index={index} onPress={() => {}} />
+              <TrackRow
+                track={item}
+                index={index}
+                onPress={() => {
+                  queueAndPlay(artistSongs, index);
+                }}
+              />
             )}
           />
         )}
       </FullScreenPanelHome>
-    </>
+    </View>
   );
 }
 
@@ -407,7 +434,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#0a0a0a",
   },
   content: {
-    padding: 16,
+    paddingHorizontal: 12,
   },
 
   // Hero

@@ -2,7 +2,6 @@ import ModalCreatePlaylist from "@/components/modals/ModalCreatePlaylist";
 import ModalPlaylists from "@/components/modals/ModalPlaylists";
 import { Text } from "@/components/mytext";
 import { useAudioState } from "@/contexts/AudioStateContext";
-import { useAuth } from "@/contexts/AuthContext";
 import { useAudio } from "@/contexts/PlayerContext";
 import { MaterialIcons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -40,7 +39,6 @@ export default function Playlists() {
     songs: Song[];
   }
 
-  const { logout, userId, token } = useAuth();
   const { setQueue, PlayerHeight, setListUserPlaylist, listUserPlaylist } =
     useAudio();
   const { currentSongData } = useAudioState();
