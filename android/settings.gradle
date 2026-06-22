@@ -37,3 +37,11 @@ expoAutolinking.useExpoVersionCatalog()
 
 include ':app'
 includeBuild(expoAutolinking.reactNativeGradlePlugin)
+
+dependencyResolutionManagement {
+    repositories {
+      google()
+      mavenCentral()
+      maven { url = uri("https://jitpack.io") }
+    }
+}

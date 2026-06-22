@@ -2,6 +2,7 @@ package com.martingl.mp3kz
 
 import android.app.Application
 import android.content.res.Configuration
+import android.util.Log
 
 import com.facebook.react.PackageList
 import com.facebook.react.ReactApplication
@@ -14,6 +15,8 @@ import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint
 import com.facebook.react.defaults.DefaultReactNativeHost
 import com.martingl.mp3kz.newpipe.NewPipePackage
 import com.martingl.mp3kz.mediasession.MediaSessionPackage
+import com.martingl.mp3kz.ytdlp.YtDlpPackage
+import com.yausername.youtubedl_android.YoutubeDL
 
 import expo.modules.ApplicationLifecycleDispatcher
 import expo.modules.ReactNativeHostWrapper
@@ -29,6 +32,7 @@ class MainApplication : Application(), ReactApplication {
               // add(MyReactNativePackage())
               add(NewPipePackage())
               add(MediaSessionPackage())
+              add(YtDlpPackage())
             }
 
           override fun getJSMainModuleName(): String = ".expo/.virtual-metro-entry"
@@ -44,12 +48,24 @@ class MainApplication : Application(), ReactApplication {
 
   override fun onCreate() {
     super.onCreate()
+    // inicializar youtubedl-android
+    try {
+      YoutubeDL.getInstance().init(this)
+      Thread {
+          try {
+              YoutubeDL.getInstance().updateYoutubeDL(
+                  this,
+                  YoutubeDL.UpdateChannel.STABLE
+              )
+          } catch (e: Exception) { }
+      }.start()
+    } catch (e: Exception) { }
+    loadReactNative(this)
     DefaultNewArchitectureEntryPoint.releaseLevel = try {
       ReleaseLevel.valueOf(BuildConfig.REACT_NATIVE_RELEASE_LEVEL.uppercase())
     } catch (e: IllegalArgumentException) {
       ReleaseLevel.STABLE
     }
-    loadReactNative(this)
     ApplicationLifecycleDispatcher.onApplicationCreate(this)
   }
 

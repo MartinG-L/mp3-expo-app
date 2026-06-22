@@ -14,7 +14,7 @@ import React, {
 import { NativeEventEmitter, NativeModules } from "react-native";
 import { AudioState, AudioStateContext } from "./AudioStateContext";
 import { useAuth } from "./AuthContext";
-const { NewPipeModule, MediaSessionModule } = NativeModules;
+const { NewPipeModule, MediaSessionModule, YtDlpModule } = NativeModules;
 const mediaSessionEmitter = new NativeEventEmitter(
   NativeModules.MediaSessionModule,
 );
@@ -158,7 +158,13 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({
             urlThumbnail: searchSong.data[0].urlThumbnail,
           };
         }
-        const mediaUrl = await NewPipeModule.getAudioUrl(finalSong.videoId);
+        let mediaUrl = "";
+        try {
+          mediaUrl = await NewPipeModule.getAudioUrl(finalSong.videoId);
+        } catch {
+          // Si falla con NewPipe, intentamos con YtDlp
+          mediaUrl = await YtDlpModule.getAudioUrl(finalSong.videoId);
+        }
         setAudioState((prev) => ({
           ...prev,
           currentSongData: finalSong,
